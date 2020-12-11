@@ -1,0 +1,310 @@
+﻿@model IEnumerable<Stanford_ShopThoiTrang.Models.ChuDe>
+
+@{
+    ViewBag.Title = "Quản lý thông tin chủ đề";
+    Layout = "~/Areas/Admin/Views/Shared/_ShopAdmin.cshtml";
+}
+
+@**Khai báo tiêu đề cho trang danh sách*@
+@section tieuDeTrang{
+    Shop thời trang
+    <small>
+        <i class="ace-icon fa fa-angle-double-right"></i>
+        Quản lý thông tin chủ đề
+    </small>
+}
+<script type="text/javascript">
+    $(document).ready(function () {
+        //Xử lý thêm mới
+        $("#btnThucHien").click(function () {
+            //Xóa các thông báo lỗi nếu nhập sai chuỗi truyền vào nếu có
+            $('#ErrorTenChuDe').text("");
+            $('#ErrorAnhChuDe').text("");
+            //Lấy thông tin
+            var tenCD = $("#txtTenChuDe").val();
+            var moTa = $("#txtMoTa").val();
+            var chuDeId = $("#chuDeId").val();
+            if (chuDeId == null || chuDeId.length == 0) {
+                chuDeId = 0;
+            }
+            var anh = $('#urlAnh').val();
+
+            var frmData = new FormData();
+            frmData.append('tenCD', tenCD);
+            frmData.append('moTa', moTa);
+            frmData.append('id', chuDeId);
+            frmData.append('anh', anh);
+            //Thực hiện xử lý thêm mới bằng ajax
+            $.ajax({
+                type: "POST",
+                contentType: false,
+                processData: false,
+                url: "/Admin/ChuDe/ThemChuDeJson",
+                data: frmData,
+                dataType: "json",
+                success: function (data) {
+                    if (data.success == true) {
+                        //Reload lại danh sách
+                        window.location.reload();
+                        $('#urlAnh').val("");
+                    }
+                    else {
+                        if (data.coTenChuDe == 0) {
+                            $('#ErrorTenChuDe').text(data.msg);
+                        }
+                        if (data.coTrungTenChuDe == 0) {
+                            $('#ErrorTenChuDe').text(data.msg);
+                        }
+                        if (data.coAnhChuDe == 0) {
+                            $('#ErrorAnhChuDe').text(data.msg);
+                        }
+                    }
+                }
+            });
+        });
+
+        $('#fAnh').change(function () {          
+            var files = $('#fAnh').get(0).files;
+            var frmData = new FormData();        
+            frmData.append('file', files[0]);
+            $.ajax({
+                url: "/Admin/ChuDe/UploadAnh",
+                type: "POST",
+                contentType: false,
+                processData: false,
+                data: frmData,
+                dataType: "json",
+                success: function (data) {
+                    if (data != null) {
+                        $('#imageAnh').attr('src','/Content/Images/'+data);
+                        $('#urlAnh').val(data);
+                    }
+                }
+            });
+        });
+    });
+
+    //Xóa thông tin khi đóng form
+    function XoaThongTinForm() {
+        $("#tieude").text("Thêm mới chủ đề");
+        $("#txtTenChuDe").val("");
+        $('#urlAnh').val("");
+        $('#ErrorTenChuDe').text("");
+        $('#ErrorAnhChuDe').text("");
+    }
+
+    function SuaThongTin(id) {
+       // alert("Mã cần sửa: " + id);
+        $("#tieude").text("Cập nhật chủ đề");
+           var frmData = new FormData();
+            frmData.append('id', id);
+         //Thực hiện xử lý thêm mới bằng ajax
+            $.ajax({
+                type: "POST",
+                contentType: false,
+                processData: false,
+                url: "/Admin/ChuDe/ChiTietChuDeJson",
+                data: frmData,
+                dataType: "json",
+                success: function (data) {
+                    if (data != null) {
+                        
+                        $("#chuDeId").val(data[0]);
+                        $("#txtTenChuDe").val(data[1]);
+                        $("#txtMoTa").val(data[2]);
+                        $('#imageAnh').attr('src', '/Content/Images/'+data[3]);
+                        $('#urlAnh').val(data[3]);
+                    }
+                }
+            });
+    }
+
+    //Xóa thông tin chủ đề
+    function xoaChuDe()
+    {
+        var id = $('#chuDeId').val();
+    		$.ajax({
+    			type: "POST",
+    			contentType: "application/json; charset=utf-8",
+    			url: "/Admin/ChuDe/Xoa",
+    			data: "{'id':'" + id + "'}",
+    			dataType: "json",
+    			async: "false",
+    			success: function (data) {
+    				//debugger;
+    				if (data != null) {
+                        //Reload lại trang
+    					window.location.reload();
+    				} 
+    				else
+    					alert('Có lỗi xảy ra trong quá trình thực hiện');
+    			},
+    			error: function (result, textStatus, errorThrown) {
+    				alert("Error:" + errorThrown + " - " + textStatus + " - " + result);
+    				window.location.reload();
+    			}
+    		});
+    	
+       
+    }//End xoaChuDe
+
+    function ShowModal(id) {
+        $('#staticModal').modal('toggle');
+        $('#chuDeId').val(id);
+    }
+    
+    function ClearModal() {
+        $('#chuDeId').val('');
+    }
+</script>
+<div class="row">
+    <div class="col-xs-12">
+        <!-- PAGE CONTENT BEGINS -->
+
+        <div class="row">
+            <div class="col-xs-12">
+                <div class="clearfix">
+                    <div class="pull-right tableTools-container">
+                        <span data-toggle="modal" data-target="#themmoiChuDe" class="btn btn-primary"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span> Thêm mới</span>
+                    </div>
+                </div>
+                <div class="table-header">
+                    Danh sách thông tin chủ đề
+                </div>
+
+                <!-- div.table-responsive -->
+                <!-- div.dataTables_borderWrap -->
+                <div>
+                    <table id="dynamic-table" class="table table-striped table-bordered table-hover">
+                        <thead>
+                            <tr>
+                                <th class="center">
+                                    <label class="pos-rel">
+                                        <input type="checkbox" class="ace" />
+                                        <span class="lbl"></span>
+                                    </label>
+                                </th>
+                                <th>Id</th>
+                                <th>Tên chủ đề</th>
+                                <th>Mô tả</th>
+                                <th>Ảnh</th>
+                                <th>Chức năng</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+                            @foreach (var item in Model)
+                            {
+                                <tr>
+                                    <td class="center">
+                                        <label class="pos-rel">
+                                            <input type="checkbox" class="ace" />
+                                            <span class="lbl"></span>
+                                        </label>
+                                    </td>
+                                    <td>@item.Id</td>
+                                    <td>@item.TenChuDe</td>
+                                    <td>@item.MoTa</td>
+                                    <td>
+                                        <img src="~/Content/Images/@item.AnhChuDe" width="100px" height="100px" class="img-thumbnail" />
+                                    </td>
+                                    <td style="width:120px;">
+                                        <div class="hidden-sm hidden-xs action-buttons">
+                                            <a class="blue" href="#">
+                                                <i class="ace-icon fa fa-search-plus bigger-130"></i>
+                                            </a>
+                                            <a class="green" data-toggle="modal" data-target="#themmoiChuDe" onclick="SuaThongTin(@item.Id);">
+                                                <i class="ace-icon fa fa-pencil bigger-130"></i>
+                                            </a>
+
+                                            <a class="red" href="#" onclick="ShowModal(@item.Id)">
+                                                <i class="ace-icon fa fa-trash-o bigger-130"></i>
+                                            </a>
+                                        </div>
+
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <!-- PAGE CONTENT ENDS -->
+    </div><!-- /.col -->
+</div><!-- /.row -->
+<!--Thiết kế form thêm mới chủ đề-->
+<div class="modal fade" id="themmoiChuDe" role="dialog">
+    <div class="modal-dialog">
+        <!-- Modal content-->
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" onclick="XoaThongTinForm();">&times;</button>
+                <h4 class="modal-title"><span id="tieude">Thêm thông tin chủ đề</span></h4>
+            </div>
+            <div class="modal-body" style="padding: 10px 10px;">
+                <div class="row">
+                    <div class="col-md-3">
+                        <label>Tên chủ đề<span style="color:red">(*)</span></label>
+                    </div>
+                    <div class="col-md-9">
+                        <input type="text" id="txtTenChuDe" class="form-control" data-val="true" required data-val-required="Bạn cần nhập tên chủ đề" />
+                        <p id="ErrorTenChuDe" style="color:red"></p>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-3">
+                        <label>Mô tả:</label>
+                    </div>
+                    <div class="col-md-9">
+                        <input type="text" id="txtMoTa" class="form-control" data-val="true" />
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-3">
+                        <label>Ảnh chủ đề<span style="color:red">(*)</span></label>
+                    </div>
+                    <div class="col-md-9">
+                        <input type="file" id="fAnh" name="fAnh" class="form-control"/>
+                        <img id="imageAnh" width="150px" height="150px" class="img-thumbnail" />
+                        <p id="ErrorAnhChuDe" style="color:red"></p>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer" style="margin: 0px; padding: 10px 10px;">
+                <input id="btnThucHien" type="button" class="btn btn-primary" value="Lưu lại" />
+                <button type="button" class="btn btn-primary" data-dismiss="modal" title="Đóng giao diện hiện thời" onclick="XoaThongTinForm();">Đóng</button>
+                <br />
+                <input type="hidden" id="chuDeId" name="chuDeId" />
+                <input type="hidden" id="urlAnh" name="urlAnh" />
+            </div>
+
+        </div>
+    </div>
+</div>
+@*Hiển thị dialog xóa thông tin*@
+<div class="modal fade" id="staticModal" tabindex="-1" role="dialog" aria-labelledby="staticModalLabel" aria-hidden="true" data-backdrop="static">
+    <div class="modal-dialog modal-sm" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="staticModalLabel">Xóa chủ đề</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p>
+                    Bạn có chắc chắn muốn xóa chủ đề?
+                </p>
+                <input type="hidden" id="chuDeId" />
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" onclick="xoaChuDe()">Xóa</button>
+                <button type="button" class="btn btn-secondary" data-dismiss="modal" onclick="ClearModal()">Đóng</button>
+
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,142 @@
+﻿@using Stanford_ShopThoiTrang.Models;
+@model IEnumerable<Cart>
+@{
+    ViewBag.Title = "GioHang";
+    Layout = "~/Views/Shared/_LayoutCart.cshtml";
+}
+<script>
+    //Xoá giỏ hàng trên Session bằng ajax
+    function XoaGioHang(id) {
+        var frmData = new FormData();
+        frmData.append('id', id);
+        $.ajax({
+            type: "POST",
+            contentType: "application/json; charset=utf-8",
+            url: "/Cart/XoaGioHangJson",
+            data: "{'id':'" + id + "'}",
+            dataType: "json",
+            async: "false",
+            success: function (data) {
+                //debugger;
+                if (data != null) {
+                    //Reload lại trang
+                    window.location.reload();
+                }
+                else
+                    alert('Có lỗi xảy ra trong quá trình thực hiện');
+            },
+            error: function (result, textStatus, errorThrown) {
+                alert("Error:" + errorThrown + " - " + textStatus + " - " + result);
+                window.location.reload();
+            }
+        });
+    }
+    //Cộng trừ số lượng
+    function ThemBotSoLuong(id,soluong) {
+        var frmData = new FormData();
+        frmData.append('id', id);
+        frmData.append('soluong', soluong);
+        $.ajax({
+            type: "POST",
+                    contentType: false,
+                    processData: false,
+                    url: "/Cart/ThemBotSoLuongJson",
+                    data: frmData,
+                    dataType: "json",
+            success: function (data) {
+                //debugger;
+                if (data != null) {
+                    //Reload lại trang
+                    window.location.reload();
+                }
+                else
+                    alert('Có lỗi xảy ra trong quá trình thực hiện');
+            },
+            error: function (result, textStatus, errorThrown) {
+                alert("Error:" + errorThrown + " - " + textStatus + " - " + result);
+                window.location.reload();
+            }
+        });
+    }
+</script>
+<style>
+    button{
+        color:white;
+        background-color:rgb(255,95,19);
+        border:0;
+        width:28px;
+        height:28px;
+    }
+    .off{
+        color:black;
+        background-color:unset;
+        width:28px;
+        height:28px;
+    }
+</style>
+
+<div class="container">
+    <div class="check">
+        <h1>Giỏ hàng của tôi ( @Session["SoSP"] )</h1>
+        <div class="col-md-9 cart-items">
+            @foreach (var item in Model)
+            {
+                <div class="cart-header">
+                    <div class="close1" onclick="XoaGioHang(@item.Id)"> </div>
+                    <div class="cart-sec simpleCart_shelfItem">
+                        <a class="cart-item cyc" href="~/Home/ChiTietSanPham/@item.Id">
+                            <img class="img-responsive" src="/Content/Images/@item.Anh" style="max-width:200px;max-height:200px" alt="">
+                        </a>
+                        <div class="cart-item-info">
+
+                            <h3><a href="~/Home/ChiTietSanPham/@item.Id">@item.TenSP</a></h3>
+                            <br />
+                            <ul class="qty">
+                                <li><p style="font-size:15px">Giá : @item.Gia.ToString("###,###") đồng</p></li>
+                                <li><p style="font-size:15px">Số lượng : <span><button @if (@item.SoLuong == 1) { @Html.AttributeEncode("disabled=disabled class=off") } onclick="ThemBotSoLuong(@item.Id,-1)">-</button></span> @item.SoLuong <span><button onclick="ThemBotSoLuong(@item.Id,1)">+</button></span></p></li>
+                            </ul>
+
+                            <div class="delivery" style="max-width:90%">
+                                <p>@item.MoTa</p>
+                                <div class="clearfix"></div>
+                            </div>
+                        </div>
+                        <div class="clearfix"></div>
+
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+    <div class="col-md-3 cart-total">
+        <a class="continue" href="~/Home/SanPham">Tiếp tục mua hàng</a>
+        <div class="price-details">
+            <h3>Price Details</h3>
+            @foreach (var item in Model)
+            {
+                <span>&nbsp;</span>
+                <span>@item.SoLuong x @item.Gia.ToString("###,###") đồng</span>
+            }
+            <div class="clearfix"></div>
+        </div>
+        @{
+            string b = "";
+            double tongtien = Convert.ToDouble(Session["TongTien"].ToString());
+            b = tongtien.ToString("###,###");
+        }
+        <ul class="total_price">
+            <li class="last_price"> <h4>Tổng</h4></li>
+            <li class="last_price"><span>@Html.Raw(b) đồng</span></li>
+            <div class="clearfix"> </div>
+        </ul>
+
+
+        <div class="clearfix"></div>
+        <a class="order" href="~/Cart/ThanhToan">Đặt hàng</a>
+
+    </div>
+
+    <div class="clearfix"> </div>
+</div>
+</div>
+

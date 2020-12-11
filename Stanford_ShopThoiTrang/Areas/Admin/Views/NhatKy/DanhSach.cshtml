@@ -1,0 +1,194 @@
+﻿@model IEnumerable<Stanford_ShopThoiTrang.Models.NhatKy>
+@{
+    ViewBag.Title = "Quản lý thông tin Chức Năng";
+    Layout = "~/Areas/Admin/Views/Shared/_ShopAdmin.cshtml";
+}
+
+@**Khai báo tiêu đề cho trang danh sách*@
+@section tieuDeTrang{
+    Shop thời trang
+    <small>
+        <i class="ace-icon fa fa-angle-double-right"></i>
+        Nhật Ký
+    </small>
+}
+<script type="text/javascript">
+    //Xóa thông tin chủ đề
+    function xoaNhatKy() {
+        var id = $('#XoaNhatKyId').val();
+        $.ajax({
+            type: "POST",
+            contentType: "application/json; charset=utf-8",
+            url: "/Admin/NhatKy/Xoa",
+            data: "{'id':'" + id + "'}",
+            dataType: "json",
+            async: "false",
+            success: function (data) {
+                //debugger;
+                if (data != null) {
+                    //Reload lại trang
+                    window.location.reload();
+                }
+                else
+                    alert('Có lỗi xảy ra trong quá trình thực hiện');
+            },
+            error: function (result, textStatus, errorThrown) {
+                alert("Error:" + errorThrown + " - " + textStatus + " - " + result);
+                window.location.reload();
+            }
+        });
+          $('#chkAll').change(function () {
+            var check = $(this).prop('checked');
+            $('.ace').each(function (index, item) {
+                $(item).prop('checked', check);
+            });
+        });
+
+    }//End xoaChuDe
+
+    function ShowModal(id) {
+        $('#staticModal').modal('toggle');
+        $('#XoaNhatKyId').val(id);
+    }
+
+    function ClearModal() {
+        $('#XoaNhatKyId').val('');
+    }
+      $(document).ready(function () {
+
+   $('#chkAll').change(function () {
+            var check = $(this).prop('checked');
+            $('.ace').each(function (index, item) {
+                $(item).prop('checked', check);
+            });
+        });
+
+          $("#delete").click(function () {
+              var Id = new Array();
+        $('input:checkbox.ace').each(function () {
+            if ($(this).prop('checked')) {
+                Id.push($(this).val());
+            }
+        });
+        var options = {};
+        options.url = "/Admin/NhatKy/Delete";
+        options.type = "POST";
+        options.data = JSON.stringify(Id);
+        options.contentType = "application/json";
+        options.dataType = "json";
+        options.success = function (msg) {
+            alert(msg);
+        };
+        options.error = function () {
+            alert("Có lỗi khi xóa");
+        };
+        $.ajax(options);
+    });
+});
+
+</script>
+<div class="row">
+    <div class="col-xs-12">
+        <!-- PAGE CONTENT BEGINS -->
+
+        <div class="row">
+            <div class="col-xs-12">
+                <div class="clearfix">
+
+                </div>
+                <div class="table-header">
+                    Nhật Ký
+                </div>
+
+                <!-- div.table-responsive -->
+                <!-- div.dataTables_borderWrap -->
+                <div>
+                    <table id="dynamic-table" class="table table-striped table-bordered table-hover">
+                        <thead>
+                            <tr>                             
+                                </th>
+                                <th class="center">
+                                    <label class="pos-rel">
+                                        <input type="checkbox" id="chkAll" />
+                                        <span class="lbl"></span>
+                                    </label>
+                                </th>
+                                <th>Id</th>
+                                <th>Người dùng</th>
+                                <th>Nội dung</th>
+                                <th>Ngày Tạo</th>
+                                <th>User Id </th>
+                                <th>Địa Chỉ IP</th>
+                                <th>Hành Động</th>
+                                <th>
+                                    <div class="hidden-sm hidden-xs action-buttons">
+
+                                        <a class="red" href="#" value="Xoa" onclick="return confirm('Xác nhận các nhật ký được chọn ?')"  id="delete">
+                                            <i class="ace-icon fa fa-trash-o bigger-130"></i>
+                                        </a>
+                                    </div>
+                                </th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+                            @foreach (var item in Model)
+                            {
+                            <tr>
+                                <td class="center">
+                                    <label class="pos-rel">
+                                        <input type="checkbox" class="ace" value="@item.Id" />
+                                        <span class="lbl"></span>
+                                    </label>
+                                </td>
+                                <td>@item.Id</td>
+                                <td>@item.NguoiDung.HoTen</td>
+                                <td>@item.NoiDung</td>
+                                <td>@item.NgayTao</td>
+                                <td>@item.UserId</td>
+                                <td>@item.DiaChiIP</td>
+                                <td>@item.HanhDong</td>
+                                <td style="width:120px;">
+                                    <div class="hidden-sm hidden-xs action-buttons">
+                                        <a class="red" href="#" onclick="ShowModal(@item.Id)">
+                                            <i class="ace-icon fa fa-trash-o bigger-130"></i>
+                                        </a>
+                                    </div>
+
+                                </td>
+                            </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <!-- PAGE CONTENT ENDS -->
+    </div><!-- /.col -->
+</div><!-- /.row -->
+<!--Thiết kế form thêm mới chủ đề-->
+@*Hiển thị dialog xóa thông tin*@
+<div class="modal fade" id="staticModal" tabindex="-1" role="dialog" aria-labelledby="staticModalLabel" aria-hidden="true" data-backdrop="static">
+    <div class="modal-dialog modal-sm" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="staticModalLabel">Xóa Nhật Ký</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p>
+                    Bạn có chắc chắn muốn xóa Nhật Ký?
+                </p>
+                <input type="hidden" id="XoaNhatKyId" />
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" onclick="xoaNhatKy()">Xóa</button>
+                <button type="button" class="btn btn-secondary" data-dismiss="modal" onclick="ClearModal()">Đóng</button>
+
+            </div>
+        </div>
+    </div>
+</div>
+

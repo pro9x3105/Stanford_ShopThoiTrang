@@ -1,0 +1,158 @@
+﻿@model Stanford_ShopThoiTrang.Models.SanPham
+
+@{
+    ViewBag.Title = "UpdateSanPham";
+    Layout = "~/Areas/Admin/Views/Shared/_ShopAdmin.cshtml";
+}
+@section tieuDeTrang{
+    Shop thời trang
+    <small>
+        <i class="ace-icon fa fa-angle-double-right"></i>
+        Cập nhật thông tin sản phẩm
+    </small>
+}
+
+@using (Html.BeginForm("UpdateSanPham", "SanPham", FormMethod.Post, new { encType = "multipart/form-data" }))
+{
+    @Html.AntiForgeryToken()
+    @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+    <div class="form-group col-md-12">
+        <lable class="control-label col-md-2">Tên sản phẩm<span style="color:red">(*)</span></lable>
+        <div class="form-group col-md-4">
+            @Html.TextBoxFor(p => p.TenSanPham, "", new { @class = "form-control", @placeholder = "---Nhập tên sản phẩm---" })
+            <p style="color:red">@ViewBag.ErrorTenSanPham</p>
+        </div>
+        <lable class="control-label col-md-1">Nội dung</lable>
+        <div class="form-group col-md-5">
+            @Html.TextBoxFor(p => p.NoiDung, "", new { @class = "form-control", @placeholder = "---Nhập nội dung---" })
+        </div>
+    </div>
+
+    <div class="form-group col-md-12">
+        <lable class="control-label col-md-2">Mô tả<span style="color:red">(*)</span></lable>
+        <div class="form-group col-md-10">
+            @Html.TextBoxFor(p => p.MoTa, "", new { @class = "form-control", @placeholder = "---Mô tả sản phẩm---" })
+            <p style="color:red">@ViewBag.ErrorMoTa</p>
+        </div>
+    </div>
+
+    <div class="form-group col-md-12">
+        <lable class="control-label col-md-2">Ảnh<span style="color:red">(*)</span></lable>
+        <div class="form-group col-md-10">
+            <img src="~/Content/Images/@Model.AnhSanPham" width="170px" height="170px" id="imgAnh" class="img-thumbnail" />
+            <input type="file" name="fAnh" id="fAnh" />
+            @Html.HiddenFor(p => p.AnhSanPham)
+        </div>
+    </div>
+
+    <div class="form-group col-md-12">
+        <lable class="control-label col-md-2">Giá<span style="color:red">(*)</span></lable>
+        <div class="form-group col-md-4">
+            @Html.TextBoxFor(p => p.Gia, "", new { @class = "form-control", @placeholder = "---Nhập giá---" })
+            <p style="color:red">@ViewBag.ErrorGia</p>
+        </div>
+        <lable class="control-label col-md-2">Kích cỡ<span style="color:red">(*)</span></lable>
+        <div class="form-group col-md-4">
+            @Html.TextBoxFor(p => p.KichCo, "", new { @class = "form-control", @placeholder = "---Nhập kích cỡ---" })           
+            <p style="color:red">@ViewBag.ErrorKichCo</p>
+        </div>
+    </div>
+
+    <div class="form-group col-md-12">
+        <lable class="control-label col-md-2">Màu<span style="color:red">(*)</span></lable>
+        <div class="form-group col-md-4">
+            @Html.ListBox("MauId", (MultiSelectList)ViewBag.ddlMau, new { multiple = "multiple", @class = "form-control" })
+            <p style="color:red">@ViewBag.ErrorMau</p>
+        </div>
+        <lable class="control-label col-md-2">Số lượng<span style="color:red">(*)</span></lable>
+        <div class="form-group col-md-4">
+            @Html.TextBoxFor(p => p.SoLuong, "", new { @class = "form-control", @placeholder = "---Nhập số lượng---" })
+            <p style="color:red">@ViewBag.ErrorSoLuong</p>
+            <p style="color:red">@ViewBag.ErrorSoLuongSanPham</p>
+        </div>
+    </div>
+
+    <div class="form-group col-md-12">
+        <lable class="control-label col-md-2">Rating</lable>
+        <div class="form-group col-md-10">
+            @Html.TextBoxFor(p => p.Rating, "", new { @class = "form-control", @placeholder = "---Nhập điểm đánh giá---" })
+        </div>
+    </div>
+
+    <div class="form-group col-md-12">
+        <lable class="control-label col-md-2">Tags</lable>
+        <div class="form-group col-md-10">
+            @Html.TextBoxFor(p => p.Tags, "", new { @class = "form-control", @placeholder = "---Nhập Tags---" })
+        </div>
+    </div>
+
+    <div class="form-group col-md-12">
+        <lable class="control-label col-md-2">Chủ đề<span style="color:red">(*)</span></lable>
+        <div class="form-group col-md-4">
+            @Html.DropDownListFor(model => model.ChuDeId, (SelectList)ViewBag.ChuDe, "---Chọn chủ đề---", new { @class = "form-control" })
+            <p style="color:red">@ViewBag.ErrorChuDeSanPham</p>
+        </div>
+        <lable class="control-label col-md-2">Hãng sản xuất<span style="color:red">(*)</span></lable>
+        <div class="form-group col-md-4">
+            @Html.DropDownListFor(model => model.HangId, (SelectList)ViewBag.HangSanXuat, "---Chọn hãng sản xuất---", new { @class = "form-control" })
+            <p style="color:red">@ViewBag.ErrorHangSanXuat</p>
+        </div>
+    </div>
+
+    <div class="form-group col-md-12">
+        <lable class="control-label col-md-2">Loại sản phẩm<span style="color:red">(*)</span></lable>
+        <div class="form-group col-md-4">
+            @Html.DropDownListFor(model => model.LoaiId, (SelectList)ViewBag.LoaiSanPham, "---Chọn loại sản phẩm---", new { @class = "form-control" })
+            <p style="color:red">@ViewBag.ErrorLoaiSanPham</p>
+        </div>
+        <lable class="control-label col-md-2">Xuất xứ<span style="color:red">(*)</span></lable>
+        <div class="form-group col-md-4">
+            @Html.DropDownListFor(model => model.XuatXuId, (SelectList)ViewBag.XuatXu, "---Chọn xuất xứ---", new { @class = "form-control" })
+            <p style="color:red">@ViewBag.ErrorXuatXu</p>
+        </div>
+    </div>
+
+    <div class="form-group col-md-12">
+        <a href="/Admin/SanPham/DanhSachSanPham" class="btn btn-primary" style="width:117.59px;height:42px;border-radius:7px;transform:translateX(1136px)"><span class="glyphicon glyphicon-arrow-left" aria-hidden="true"></span>Trở về</a>
+        <button type="submit" class="btn btn-primary" style="width: 117.59px; height: 42px; border-radius: 7px;float:right;transform:translateX(-115%)"><span class="glyphicon glyphicon-pencil" aria-hidden="true"></span>Cập nhật</button>
+
+    </div>
+}
+
+<div>
+</div>
+
+
+<script src="~/Scripts/bootstrap.min.js"></script>
+<script src="~/Scripts/jquery-3.3.1.min.js"></script>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.3/css/select2.min.css" rel="stylesheet" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.3/js/select2.min.js"></script>
+<script src="~/Scripts/autoNumeric-2.0-BETA.js"></script>
+<script src="~/Scripts/autoNumeric.js"></script>
+<script type="text/javascript">
+    $(document).ready(function () {
+        $('#MauId').select2();
+        function ReadImg(input) {
+            //Nếu kích chọn ảnh
+            if (input.files && input.files[0]) {
+                var reader = new FileReader();
+                reader.onload = function (e) {
+                    $('#imgAnh').attr('src', e.target.result);
+                }
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+        $('#fAnh').change(function () {
+            ReadImg(this);
+        });
+
+        $('#Gia').autoNumeric('init');
+        $('#Gia').change(function () {
+
+            var x = $(this).autoNumeric('get');
+            $('#Gia').val(x);
+        });
+
+      
+    });
+</script>

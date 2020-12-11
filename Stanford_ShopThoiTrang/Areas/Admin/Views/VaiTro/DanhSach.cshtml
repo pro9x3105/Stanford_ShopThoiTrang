@@ -1,0 +1,301 @@
+﻿@model IEnumerable<Stanford_ShopThoiTrang.Models.VaiTro>
+@{
+    ViewBag.Title = "Quản lý thông tin vai trò";
+    Layout = "~/Areas/Admin/Views/Shared/_ShopAdmin.cshtml";
+}
+
+<!-- NQA - 11/7/2020 - Thêm thông báo , tìm kiếm ( chú ý class="search" )-->
+<!-- NQA - 11/7/2020 - Thêm style cho các nút để làm phân quyền
+
+    style="display:@ViewBag.Them" ------- Nút thêm
+    style="display:@ViewBag.Sua"  ------- Nút sửa
+    style="display:@ViewBag.Xoa"  ------- Nút xoá
+    -->
+@**Khai báo tiêu đề cho trang danh sách*@
+@section tieuDeTrang{
+    Shop thời trang
+    <small>
+        <i class="ace-icon fa fa-angle-double-right"></i>
+        Quản lý thông tin vai trò
+    </small>
+}
+
+<script type="text/javascript">
+    $(document).ready(function () {
+        //Xử lý thêm mới
+        $("#btnThucHien").click(function () {
+            //Lấy thông tin
+            var tenVaiTro = $("#txtTenVaiTro").val();
+            var moTa = $("#txtMoTa").val();
+            var vaiTroId = $("#vaiTroId").val();
+            var ThongBao = "";
+            if (vaiTroId == null || vaiTroId.length == 0) {
+                vaiTroId = 0;
+            }
+            if (tenVaiTro == null || tenVaiTro.length == 0) {
+                ThongBao += " - Bạn cần phải nhập thông tin tên vai trò <br>";
+            }
+            if (ThongBao == "") {
+                var frmData = new FormData();
+                frmData.append('tenVaiTro', tenVaiTro);
+                frmData.append('moTa', moTa);
+                frmData.append('id', vaiTroId);
+                //Thực hiện xử lý thêm mới bằng ajax
+                $.ajax({
+                    type: "POST",
+                    contentType: false,
+                    processData: false,
+                    url: "/Admin/VaiTro/ThemJson",
+                    data: frmData,
+                    dataType: "json",
+                    success: function (data) {
+                        if (data != null) {
+                            //Reload lại danh sách
+                            alert(data);
+                            window.location.reload();
+                        }
+                    }
+                });
+            }
+            $("#txtThongBao").html(ThongBao);
+        });
+        //Tìm kiếm thông tin
+        function Contains(text_one, text_two) {
+            if (text_one.indexOf(text_two) != -1) {
+                return true;
+            }
+        }
+        $("#txtTimKiem").keyup(function () {
+            var x = $("#txtTimKiem").val().toLowerCase();
+            var dem = 0;
+            $(".search").each(function () {
+                if (!Contains($(this).text().toLowerCase(), x)) {
+                    $(this).hide();
+                }
+                else {
+                    dem++;
+                    $(this).show();
+                }
+            });
+            $("#txtSoKetQuaTimKiem").html("Có " + dem + " kết quả tìm thấy ");
+        });
+    });
+
+    //Xóa thông tin khi đóng form
+    function XoaThongTinForm() {
+        $("#tieude").text("Thêm mới Vai Trò");
+        $("#txtTenVaiTro").val("");
+        $("#txtMoTa").val("");
+        $("#txtThongBao").val("");
+    }
+
+    function SuaThongTin(id) {
+        var frmData = new FormData();
+        frmData.append('id', id);
+        //Thực hiện xử lý thêm mới bằng ajax
+        $.ajax({
+            type: "POST",
+            contentType: false,
+            processData: false,
+            url: "/Admin/VaiTro/ChiTietJson",
+            data: frmData,
+            dataType: "json",
+            success: function (data) {
+                if (data != null) {
+                    $("#vaiTroId").val(data.Id);
+                    $("#txtTenVaiTro").val(data.TenVaiTro);
+                    $("#txtMoTa").val(data.MoTa);
+                }
+            }
+        });
+    }
+
+    //Xóa thông tin
+    function XoaThongTin() {
+        var id = $('#vaiTroId').val();
+        $.ajax({
+            type: "POST",
+            contentType: "application/json; charset=utf-8",
+            url: "/Admin/VaiTro/XoaJson",
+            data: "{'id':'" + id + "'}",
+            dataType: "json",
+            async: "false",
+            success: function (data) {
+                //debugger;
+                if (data != null) {
+                    //Reload lại trang
+                    window.location.reload();
+                }
+                else
+                    alert('Có lỗi xảy ra trong quá trình thực hiện');
+            },
+            error: function (result, textStatus, errorThrown) {
+                alert("Error:" + errorThrown + " - " + textStatus + " - " + result);
+                window.location.reload();
+            }
+        });
+
+
+    }//End Xoa
+
+
+
+    function ShowModal(id) {
+        $('#staticModal').modal('toggle');
+        $('#vaiTroId').val(id);
+    }
+
+    function ClearModal() {
+        $('#vaiTroId').val('');
+    }
+</script>
+<div class="row">
+    <div class="col-xs-12">
+        <!-- PAGE CONTENT BEGINS -->
+
+        <div class="row">
+            <div class="col-xs-12">
+                <div class="clearfix">
+                    <div class="pull-right tableTools-container">
+                        <span id="txtSoKetQuaTimKiem"></span>
+                        <span>
+                            <input type="text" id="txtTimKiem" data-val="true" onchange="TimKiemThongTin()" placeholder="Tìm kiếm ..." />
+                        </span>
+                        <span data-toggle="modal" style="display:@ViewBag.Them" data-target="#themmoiVaiTro" class="btn btn-primary"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span> Thêm mới</span>
+                    </div>
+                </div>
+                <div class="table-header">
+                    Danh sách thông tin Vai Trò
+                </div>
+
+                <!-- div.table-responsive -->
+                <!-- div.dataTables_borderWrap -->
+                <!--Tìm kiếm-->
+
+                <div>
+                    <table id="dynamic-table" class="table table-striped table-bordered table-hover">
+                        <thead>
+                            <tr>
+                                <th class="center">
+                                    <label class="pos-rel">
+                                        <input type="checkbox" class="ace" />
+                                        <span class="lbl"></span>
+                                    </label>
+                                </th>
+                                <th>Id</th>
+                                <th>Tên vai trò</th>
+                                <th>Mô Tả</th>
+
+                                <th></th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+                            @foreach (var item in Model)
+                            {
+                                <tr class="search">
+                                    <td class="center">
+                                        <label class="pos-rel">
+                                            <input type="checkbox" class="ace" />
+                                            <span class="lbl"></span>
+                                        </label>
+                                    </td>
+                                    <td>@item.Id</td>
+                                    <td>@item.TenVaiTro</td>
+                                    <td>@item.MoTa</td>
+                                    <td style="width:120px;">
+                                        <div class="hidden-sm hidden-xs action-buttons">
+                                            <a class="blue" href="#">
+                                                <i class="ace-icon fa fa-search-plus bigger-130"></i>
+                                            </a>
+                                            <a class="green" style="display:@ViewBag.Sua" data-toggle="modal" data-target="#themmoiVaiTro" onclick="SuaThongTin(@item.Id);">
+                                                <i class="ace-icon fa fa-pencil bigger-130"></i>
+                                            </a>
+
+                                            <a class="red" style="display:@ViewBag.Xoa" href="#" onclick="ShowModal(@item.Id)">
+                                                <i class="ace-icon fa fa-trash-o bigger-130"></i>
+                                            </a>
+                                        </div>
+
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <!-- PAGE CONTENT ENDS -->
+    </div><!-- /.col -->
+</div><!-- /.row -->
+<!--Thiết kế form thêm mới chủ đề-->
+<div class="modal fade" id="themmoiVaiTro" role="dialog">
+    <div class="modal-dialog">
+        <!-- Modal content-->
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+                <h4 class="modal-title"><span id="tieude">Thêm thông tin vai trò</span></h4>
+            </div>
+            <div class="modal-body" style="padding: 10px 10px;">
+                <div class="row">
+                    <div class="col-md-3">
+                        <label>Tên vai trò<span style="color:red">(*)</span></label>
+                    </div>
+                    <div class="col-md-9">
+                        <input type="text" id="txtTenVaiTro" class="form-control" data-val="true" autofocus required data-val-required="Bạn cần nhập tên vai trò" />
+                    </div>
+                </div>
+                <div class="space-6"></div>
+                <div class="row">
+                    <div class="col-md-3">
+                        <label>Mô tả</label>
+                    </div>
+                    <div class="col-md-9">
+                        <input type="text" id="txtMoTa" class="form-control" data-val="true" />
+                    </div>
+                </div>
+                <div class="space-6"></div>
+                <div class="row">
+                    <div class="col-md-3">
+                        <label>&nbsp;</label>
+                    </div>
+                    <div class="col-md-9">
+                        <p id="txtThongBao" style="color:red"></p>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer" style="margin: 0px; padding: 10px 10px;">
+                <input id="btnThucHien" type="button" class="btn btn-primary" value="Lưu lại" />
+                <button type="button" class="btn btn-primary" data-dismiss="modal" title="Đóng giao diện hiện thời" onclick="XoaThongTinForm();">Đóng</button>
+                <br />
+                <input type="hidden" id="vaiTroId" name="vaiTroId" />
+            </div>
+
+        </div>
+    </div>
+</div>
+@*Hiển thị dialog xóa thông tin*@
+<div class="modal fade" id="staticModal" tabindex="-1" role="dialog" aria-labelledby="staticModalLabel" aria-hidden="true" data-backdrop="static">
+    <div class="modal-dialog modal-sm" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="staticModalLabel">Xóa vai trò</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p>
+                    Bạn có chắc chắn muốn xóa vai trò này?
+                </p>
+                <input type="hidden" id="vaiTroId" />
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" onclick="XoaThongTin()">Xóa</button>
+                <button type="button" class="btn btn-secondary" data-dismiss="modal" onclick="ClearModal()">Đóng</button>
+
+            </div>
+        </div>
+    </div>
+</div>

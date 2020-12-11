@@ -1,0 +1,51 @@
+﻿@model Stanford_ShopThoiTrang.Models.AnhSanPham
+
+@{
+    ViewBag.Title = "SlideAnhSanPham";
+    Layout = "~/Areas/Admin/Views/Shared/_ShopAdmin.cshtml";
+}
+@using (Html.BeginForm("SlideAnhSanPham","SanPham",FormMethod.Post, new { encType = "multipart/form-data" }))
+{
+    @Html.AntiForgeryToken()
+    
+    <div class="form-horizontal">
+        <h4>Thêm mới Slide ảnh sản phẩm</h4>
+        <hr />
+        @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+        <div class="form-group">
+            <lable class="control-label col-md-2">Tên ảnh</lable>       
+            <div class="col-md-10">
+                <input type="file" name="fAnh" multiple />             
+                <img style="float:left;width:100px;height:100px" class="img-thumbnail" />                   
+                @Html.ValidationMessageFor(model => model.TenAnh, "", new { @class = "text-danger" })
+            </div>
+        </div>
+
+        <div class="form-group">
+            <lable class="control-label col-md-2">Mô tả</lable>
+            <div class="col-md-10">
+                @Html.EditorFor(model => model.MoTa, new { htmlAttributes = new { @class = "form-control" } })
+                @Html.ValidationMessageFor(model => model.MoTa, "", new { @class = "text-danger" })
+            </div>
+        </div>
+
+        <div class="form-group">
+            <lable class="control-label col-md-2">Sắp xếp</lable>
+            <div class="col-md-10">
+                @Html.EditorFor(model => model.SapXep, new { htmlAttributes = new { @class = "form-control" } })
+                @Html.ValidationMessageFor(model => model.SapXep, "", new { @class = "text-danger" })
+            </div>
+        </div>
+
+        <div class="form-group">
+            <div class="col-md-offset-2 col-md-10">
+                <input type="submit" value="Thêm mới" class="btn btn-primary" />
+                <input type="hidden" name="SanPhamId" id="SanPhamId" value="@Model.SanPhamId"/>
+            </div>
+        </div>
+    </div>
+}
+
+<div>
+    @Html.ActionLink("Trở lại", "DanhSachSanPham",null,new {@class="btn btn-primary" })
+</div>

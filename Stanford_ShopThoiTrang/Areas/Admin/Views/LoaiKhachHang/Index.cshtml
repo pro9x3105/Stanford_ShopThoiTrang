@@ -1,0 +1,226 @@
+﻿@model IEnumerable<Stanford_ShopThoiTrang.Models.LoaiKhachHang>
+
+
+@{
+    ViewBag.Title = "Index";
+    Layout = "~/Areas/Admin/Views/Shared/_ShopAdmin.cshtml";
+}
+@section tieuDeTrang{
+    Shop thời trang
+    <small>
+        <i class="ace-icon fa fa-angle-double-right"></i>
+        Quản lý thông tin chủ đề
+    </small>
+}
+<script type="text/javascript">
+    $(document).ready(function () {
+        //Xử lý thêm mới
+        $("#btnThucHien").click(function () {
+            //Lấy thông tin
+            var tenLKH = $("#txtLoaiKhachHang").val();
+
+            var chuDeId = $("#chuDeId").val();
+            if (chuDeId == null || chuDeId.length == 0) {
+                chuDeId = 0;
+            }
+            var frmData = new FormData();
+            frmData.append('id', chuDeId);
+            frmData.append('TenLoai', tenLKH);
+
+
+            //Thực hiện xử lý thêm mới bằng ajax
+            $.ajax({
+                type: "POST",
+                contentType: false,
+                processData: false,
+                url: '@Url.Action("Create","LoaiKhachHang")',
+                data: frmData,
+                dataType: "json",
+                success: function (data) {
+                    if (data != null) {
+                        //Reload lại danh sách
+                        window.location.reload();
+                    }
+                }
+            });
+        });
+    });
+
+    //Xóa thông tin khi đóng form
+    function XoaThongTinForm() {
+        $("#tieude").text("Thêm mới loại khách hàng");
+        $("#txtTenChuDe").val("");
+    }
+
+    function SuaThongTin(id) {
+        $.ajax({
+            type: "GET",
+            url: '@Url.Action("GetById","LoaiKhachHang")'+'/'+id,
+            dataType: "json",
+            success: function (data) {
+                if (data.success) {
+                    $("#txtLoaiKhachHang").val(data.data.TenLoai);
+                    $("#chuDeId").val(data.data.Id);
+                } else {
+                    alert(data.msg)
+                }
+            },
+            error: function (result, textStatus, errorThrown) {
+                alert("Error:" + errorThrown + " - " + textStatus + " - " + result);
+                window.location.reload();
+            }
+        });
+    }
+
+    //Xóa thông tin chủ đề
+    function remove(id) {
+        Swal.fire({
+            title: 'Bạn có chắc chắn xóa?',
+            text: "Không thể khôi phục lại!",
+            icon: 'cảnh báo',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Oke, Xóa nó!',
+            cancelButtonText:'Hủy'
+        }).then((result) => {
+            if (result.value) {
+         $.ajax({
+            type: "GET",
+            url: '@Url.Action("Remove","LoaiKhachHang")'+'/'+id,
+            dataType: "json",
+            success: function (data) {
+                if (data.success) {
+                     Swal.fire(
+                    'Xóa!',
+                    'Bạn đã xóa 1 loại khách hàng.',
+                    'Thành Công'
+                    )
+    					window.location.reload();
+
+                } else {
+                    alert('false')
+                }
+            },
+            error: function (result, textStatus, errorThrown) {
+                alert("Error:" + errorThrown + " - " + textStatus + " - " + result);
+                window.location.reload();
+            }
+        });
+
+            }
+        })
+
+
+    }//End xoaChuDe
+
+    function ShowModal(id) {
+        $('#staticModal').modal('toggle');
+        $('#chuDeId').val(id);
+    }
+
+    function ClearModal() {
+        $('#chuDeId').val('');
+    }
+</script>
+
+<div class="row">
+    <div class="col-xs-12">
+        <!-- PAGE CONTENT BEGINS -->
+
+        <div class="row">
+            <div class="col-xs-12">
+                <div class="clearfix">
+                    <div class="pull-right tableTools-container">
+                        <span data-toggle="modal" data-target="#themmoiLoaiKhachHang" class="btn btn-primary"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span> Thêm mới</span>
+                    </div>
+                </div>
+                <div class="table-header">
+                    Danh sách thông tin loại khách hàng
+                </div>
+
+                <!-- div.table-responsive -->
+                <!-- div.dataTables_borderWrap -->
+                <div>
+                    <table id="dynamic-table" class="table table-striped table-bordered table-hover">
+                        <thead>
+                            <tr>
+                                <th class="center">
+                                    <label class="pos-rel">
+                                        <input type="checkbox" class="ace" />
+                                        <span class="lbl"></span>
+                                    </label>
+                                </th>
+                                <th>Tên loại</th>
+                                <th>Xử lý</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+                            @foreach (var item in Model)
+                            {
+                                <tr>
+                                    <td class="center">
+                                        <label class="pos-rel">
+                                            <input type="checkbox" class="ace" />
+                                            <span class="lbl"></span>
+                                        </label>
+                                    </td>
+                                    <td>@Html.DisplayFor(modelItem => item.TenLoai)</td>
+
+
+                                    <td style="width:120px;">
+                                        <div class="hidden-sm hidden-xs action-buttons">
+                                            <a class="blue" href="#">
+                                                <i class="ace-icon fa fa-search-plus bigger-130"></i>
+                                            </a>
+                                            <a class="green" data-toggle="modal" data-target="#themmoiLoaiKhachHang" onclick="SuaThongTin(@item.Id);">
+                                                <i class="ace-icon fa fa-pencil bigger-130"></i>
+                                            </a>
+
+                                            <a class="red" href="#" onclick="remove(@item.Id)">
+                                                <i class="ace-icon fa fa-trash-o bigger-130"></i>
+                                            </a>
+                                        </div>
+
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <!-- PAGE CONTENT ENDS -->
+    </div><!-- /.col -->
+</div><!-- /.row -->
+
+<div class="modal fade" id="themmoiLoaiKhachHang" role="dialog">
+    <div class="modal-dialog">
+        <!-- Modal content-->
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+                <h4 class="modal-title"><span id="tieude">Thêm thông tin loại khách hàng</span></h4>
+            </div>
+            <div class="modal-body" style="padding: 10px 10px;">
+                <div class="row">
+                    <div class="col-md-3">
+                        <label>Tên loại khách hàng<span style="color:red">(*)</span></label>
+                    </div>
+                    <div class="col-md-9">
+                        <input type="text" id="txtLoaiKhachHang" class="form-control" data-val="true" required data-val-required="Bạn cần nhập loại khách hàng" />
+                    </div>
+                </div>
+
+            </div>
+            <div class="modal-footer" style="margin: 0px; padding: 10px 10px;">
+                <input id="btnThucHien" type="button" class="btn btn-primary" value="Lưu lại" />
+                <button type="button" class="btn btn-primary" data-dismiss="modal" title="Đóng giao diện hiện thời" onclick="XoaThongTinForm();">Đóng</button>
+                <br />
+                <input type="hidden" id="chuDeId" name="chuDeId" />
+            </div>
+
+        </div>
+    </div>
+</div>

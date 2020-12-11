@@ -1,0 +1,104 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Schema Namespace="QuanLySachModel" Alias="Self" annotation:UseStrongSpatialTypes="false" xmlns:annotation="http://schemas.microsoft.com/ado/2009/02/edm/annotation" xmlns:customannotation="http://schemas.microsoft.com/ado/2013/11/edm/customannotation" xmlns="http://schemas.microsoft.com/ado/2009/11/edm">
+  <EntityType Name="NguoiDung">
+    <Key>
+      <PropertyRef Name="Id" />
+    </Key>
+    <Property Name="Id" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+    <Property Name="TenDangNhap" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
+    <Property Name="MatKhau" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
+    <Property Name="HoTen" Type="String" MaxLength="30" FixedLength="false" Unicode="true" />
+    <Property Name="DienThoai" Type="String" MaxLength="20" FixedLength="false" Unicode="false" />
+    <Property Name="Email" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
+    <Property Name="DiaChi" Type="String" MaxLength="150" FixedLength="false" Unicode="true" />
+    <Property Name="IsSuper" Type="Boolean" />
+  </EntityType>
+  <EntityType Name="NhanVien">
+    <Key>
+      <PropertyRef Name="MaNV" />
+    </Key>
+    <Property Name="MaNV" Type="String" MaxLength="10" FixedLength="false" Unicode="false" Nullable="false" />
+    <Property Name="HoTen" Type="String" MaxLength="30" FixedLength="false" Unicode="true" />
+    <Property Name="DienThoai" Type="String" MaxLength="20" FixedLength="false" Unicode="false" />
+    <Property Name="DiaChi" Type="String" MaxLength="100" FixedLength="false" Unicode="true" />
+    <Property Name="Luong" Type="Double" />
+    <Property Name="MaPhong" Type="String" MaxLength="5" FixedLength="false" Unicode="false" />
+    <NavigationProperty Name="PhongBan" Relationship="Self.FK_PhongBan_Id" FromRole="NhanVien" ToRole="PhongBan" />
+  </EntityType>
+  <EntityType Name="PhongBan">
+    <Key>
+      <PropertyRef Name="MaPhong" />
+    </Key>
+    <Property Name="MaPhong" Type="String" MaxLength="5" FixedLength="false" Unicode="false" Nullable="false" />
+    <Property Name="TenPhong" Type="String" MaxLength="100" FixedLength="false" Unicode="true" />
+    <NavigationProperty Name="NhanViens" Relationship="Self.FK_PhongBan_Id" FromRole="PhongBan" ToRole="NhanVien" />
+  </EntityType>
+  <EntityType Name="Sach">
+    <Key>
+      <PropertyRef Name="Id" />
+    </Key>
+    <Property Name="Id" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+    <Property Name="TenSach" Type="String" MaxLength="150" FixedLength="false" Unicode="true" />
+    <Property Name="MoTa" Type="String" MaxLength="1000" FixedLength="false" Unicode="true" />
+    <Property Name="AnhSach" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
+    <Property Name="NoiDung" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" />
+    <Property Name="Gia" Type="Double" />
+    <Property Name="NgayTao" Type="DateTime" Precision="0" />
+    <Property Name="NgayXuatBan" Type="DateTime" Precision="0" />
+    <Property Name="TacGia" Type="String" MaxLength="30" FixedLength="false" Unicode="true" />
+    <Property Name="DaDuyet" Type="Boolean" />
+    <Property Name="ChuDeId" Type="Int32" />
+  </EntityType>
+  <Association Name="FK_PhongBan_Id">
+    <End Role="PhongBan" Type="Self.PhongBan" Multiplicity="0..1" />
+    <End Role="NhanVien" Type="Self.NhanVien" Multiplicity="*" />
+    <ReferentialConstraint>
+      <Principal Role="PhongBan">
+        <PropertyRef Name="MaPhong" />
+      </Principal>
+      <Dependent Role="NhanVien">
+        <PropertyRef Name="MaPhong" />
+      </Dependent>
+    </ReferentialConstraint>
+  </Association>
+  <EntityContainer Name="QuanLySachEntities" annotation:LazyLoadingEnabled="true">
+    <EntitySet Name="NguoiDungs" EntityType="Self.NguoiDung" />
+    <EntitySet Name="NhanViens" EntityType="Self.NhanVien" />
+    <EntitySet Name="PhongBans" EntityType="Self.PhongBan" />
+    <EntitySet Name="Saches" EntityType="Self.Sach" />
+    <AssociationSet Name="FK_PhongBan_Id" Association="Self.FK_PhongBan_Id">
+      <End Role="PhongBan" EntitySet="PhongBans" />
+      <End Role="NhanVien" EntitySet="NhanViens" />
+    </AssociationSet>
+    <FunctionImport Name="SP_CapNhatChuDe">
+      <Parameter Name="id" Mode="In" Type="Int32" />
+      <Parameter Name="ten" Mode="In" Type="String" />
+      <Parameter Name="moTa" Mode="In" Type="String" />
+    </FunctionImport>
+    <FunctionImport Name="SP_ChiTietChuDe" ReturnType="Collection(QuanLySachModel.SP_ChiTietChuDe_Result)">
+      <Parameter Name="Id" Mode="In" Type="Int32" />
+    </FunctionImport>
+    <FunctionImport Name="sp_dropdiagram">
+      <Parameter Name="diagramname" Mode="In" Type="String" />
+      <Parameter Name="owner_id" Mode="In" Type="Int32" />
+    </FunctionImport>
+    <FunctionImport Name="SP_LayChuDe" ReturnType="Collection(QuanLySachModel.SP_LayChuDe_Result)" />
+    <FunctionImport Name="SP_ThemMoiChuDe">
+      <Parameter Name="ten" Mode="In" Type="String" />
+      <Parameter Name="moTa" Mode="In" Type="String" />
+    </FunctionImport>
+    <FunctionImport Name="SP_XoaChuDe">
+      <Parameter Name="id" Mode="In" Type="Int32" />
+    </FunctionImport>
+  </EntityContainer>
+  <ComplexType Name="SP_ChiTietChuDe_Result">
+    <Property Type="Int32" Name="Id" Nullable="false" />
+    <Property Type="String" Name="TenChuDe" Nullable="true" MaxLength="50" />
+    <Property Type="String" Name="MoTa" Nullable="true" MaxLength="250" />
+  </ComplexType>
+  <ComplexType Name="SP_LayChuDe_Result">
+    <Property Type="Int32" Name="Id" Nullable="false" />
+    <Property Type="String" Name="TenChuDe" Nullable="true" MaxLength="50" />
+    <Property Type="String" Name="MoTa" Nullable="true" MaxLength="250" />
+  </ComplexType>
+</Schema>

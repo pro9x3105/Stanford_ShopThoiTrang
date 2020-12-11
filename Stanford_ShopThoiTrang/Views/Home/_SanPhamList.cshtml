@@ -1,0 +1,67 @@
+﻿@using Stanford_ShopThoiTrang.Models;
+@model IEnumerable<SanPham>
+@{
+    List<SanPham> lstSanPham = Model as List<SanPham>;
+}
+<!--1/8/2020 : NQA : thêm ajax cho nút thêm-->
+<script type="text/javascript">
+    function ThemGioHang(id) {
+        var frmData = new FormData();
+        frmData.append('id', id);
+        //Thực hiện xử lý thêm mới bằng ajax
+        $.ajax({
+            type: "POST",
+            contentType: false,
+            processData: false,
+            url: "/Cart/ThemGioHangJson",
+            data: frmData,
+            dataType: "json",
+            success: function (data) {
+                if (data != null) {
+                    //Reload lại danh sách
+                    window.location.reload();
+                }
+            }
+        });
+    }
+</script>
+<div class="col-md-9 product1">
+    <div class=" bottom-product">
+        @foreach (var item in Model)
+        {
+            <div class="col-md-4 bottom-cd simpleCart_shelfItem" style="padding-bottom:30px">
+                <div class="product-at ">
+                    <a href="ChiTietSanPham/@item.Id">
+                        <img class="img-responsive" src="/Content/Images/@item.AnhSanPham" style="width:255px;height:259.46px" alt="">
+                        <div class="pro-grid">
+                            <span class="buy-in"  onclick="ThemGioHang(@item.Id)">Buy Now</span>
+                        </div>
+                    </a>
+                </div>
+                <p class="tun">@item.TenSanPham</p>
+                <a href="#" class="item_add" onclick="ThemGioHang(@item.Id)">
+                    <p class="number item_price">
+                        <i> </i>
+                        @if (item.Gia.HasValue)
+                        {
+                            @item.Gia.Value.ToString("###,###")
+                        }
+                    </p>
+                </a>
+            </div>
+        }
+        <div class="clearfix"> </div>
+    </div>
+</div>
+<div class="clearfix"> </div>
+<nav class="in">
+    <ul class="pagination">
+        <li class="disabled"><a href="#" aria-label="Previous"><span aria-hidden="true">«</span></a></li>
+        <li class="active"><a href="#">1 <span class="sr-only">(current)</span></a></li>
+        <li><a href="#">2 <span class="sr-only"></span></a></li>
+        <li><a href="#">3 <span class="sr-only"></span></a></li>
+        <li><a href="#">4 <span class="sr-only"></span></a></li>
+        <li><a href="#">5 <span class="sr-only"></span></a></li>
+        <li> <a href="#" aria-label="Next"><span aria-hidden="true">»</span> </a> </li>
+    </ul>
+</nav>

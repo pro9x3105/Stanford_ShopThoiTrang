@@ -1,0 +1,560 @@
+﻿@model IEnumerable<Stanford_ShopThoiTrang.Models.SanPham>
+
+@{
+    ViewBag.Title = "DanhSachSanPham";
+    Layout = "~/Areas/Admin/Views/Shared/_ShopAdmin.cshtml";
+}
+
+@section tieuDeTrang{
+    Shop thời trang
+    <small>
+        <i class="ace-icon fa fa-angle-double-right"></i>
+        Quản lý thông tin sản phẩm
+    </small>
+}
+<script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
+<link href="http://ajax.googleapis.com/ajax/libs/jqueryui/1.11.2/themes/smoothness/jquery-ui.css" rel="stylesheet" />
+<script src="~/Scripts/autoNumeric-2.0-BETA.js"></script>
+<script src="~/Scripts/autoNumeric.js"></script>
+<script type="text/javascript">
+    $(document).ready(function () {
+        $('#chkAll').change(function () {
+            var check = $(this).prop('checked');
+            $('.ace').each(function (index, item) {
+                $(item).prop('checked', check);
+            });
+        });
+
+        $('#btnDuyetSanPham').click(function () {
+            var arr = [];
+            $('.ace').each(function (index, item) {
+                if ($(item).prop('checked')) {
+                    var idRow = parseInt($(item).val());
+                    arr.push(idRow);
+                }
+            });
+            $.ajax({
+                url: "/Admin/SanPham/DuyetSanPham",
+                type: "POST",
+                contentType: "application/json;charset=utf-8",
+                data: JSON.stringify(arr),
+                dataType: "json",
+                success: function (data) {
+                    alert('Duyệt thành công ' + data + ' sản phẩm');
+                    window.location.reload();
+                }
+            });
+        });
+        $('#txtNgayBatDau').datepicker({
+            changeYear: true,
+            changeMonth: true,
+            dateFormat: 'dd/mm/yy'
+        });
+        $('#txtNgayKetThuc').datepicker({
+            changeYear: true,
+            changeMonth: true,
+            dateFormat: 'dd/mm/yy'
+        });
+        $('#btnThem').click(function () {
+            window.location = "/Admin/SanPham/AddSanPham";
+        });
+
+        $('#btnBoDuyet').click(function () {
+            var arr = [];
+            $('.ace').each(function (index, item) {
+                if ($(item).prop('checked')) {
+                    var idRow = parseInt($(item).val());
+                    arr.push(idRow);
+                }
+            });
+            $.ajax({
+                url: "/Admin/SanPham/BoDuyetSanPham",
+                type: "POST",
+                contentType: "application/json;charset=utf-8",
+                data: JSON.stringify(arr),
+                dataType: "json",
+                success: function (data) {
+                    alert('Đã bỏ duyệt được ' + data + ' sản phẩm');
+                    window.location.reload();
+                }
+            });
+        });
+
+        $('#txtGiaStart').autoNumeric('init');
+        $('#txtGiaStart').change(function () {
+            var x = $(this).autoNumeric('get');
+            $('#txtGiaStart').val(x);
+        });
+
+        $('#txtGiaEnd').autoNumeric('init');
+        $('#txtGiaEnd').change(function () {
+            var x = $(this).autoNumeric('get');
+            $('#txtGiaEnd').val(x);
+        });
+
+        $('#fUploadAnh').change(function () {
+            var fUploadAnh = $('#fUploadAnh').get(0).files;
+            var frmData = new FormData();
+            for (var i = 0; i < fUploadAnh.length; i++) {
+                frmData.append('fUploadAnh', fUploadAnh[i]);
+            }
+            $.ajax({
+                url: "/Admin/SanPham/UploadNhieuAnh",
+                type: "POST",
+                contentType: false,
+                processData: false,
+                data: frmData,
+                dataType: "json",
+                success: function (data) {
+                    $('#ArrAnh').val(data);
+                }
+            });
+        });
+
+        $('#btnUploadNhieuAnh').click(function () {
+            var SanPhamId = $('#AnhSanPhamId').val();
+            var ArrAnh = $('#ArrAnh').val();
+            var frmData = new FormData();
+            frmData.append('SanPhamId', SanPhamId);
+            frmData.append('ArrAnh', ArrAnh);
+            $.ajax({
+                url: "/Admin/SanPham/ThemNhieuAnhChoSanPham",
+                type: "POST",
+                contentType: false,
+                processData: false,
+                data: frmData,
+                dataType: "json",
+                success: function (data) {
+                    alert('Đã thêm thành công ' + data + ' ảnh cho sản phẩm ' + $('#txtTenSP').text());
+                    window.location.reload();
+                }
+            });
+            
+        });
+    });
+
+    function XoaSanPham(id) {
+        var kq = confirm('Bạn có chắc chắc muốn xóa không');
+        if (kq) {
+            var frmData = new FormData();
+            frmData.append('id', id);
+            $.ajax({
+                url: "/Admin/SanPham/XoaSanPham",
+                type: "POST",
+                contentType: false,
+                processData: false,
+                data: frmData,
+                dataType: "json",
+                success: function (data) {
+                    if (data != null) {
+                        alert('Xóa thành công');
+                        window.location.reload();
+                    }
+                }
+            });
+        }
+    }
+    function XoaThongTinForm() {
+        $('#SanPhamId').val("");
+        $('#tieude').text("Thêm mới thông tin sản phẩm");
+    }
+    function XemChiTietSanPham(Id) {
+        var frmData = new FormData();
+        frmData.append('Id', Id);
+        $.ajax({
+            url:"/Admin/SanPham/ThongTinChiTietSanPham",
+            type: "POST",
+            contentType: false,
+            processData: false,
+            data: frmData,
+            dataType: "json",
+            success: function (data) {
+                if (data != null) {
+                    $('#txtMaSanPham').text(data[0]);
+                    $('#txtTenSanPham').text(data[1]);
+                    $('#txtMoTa').text(data[2]);
+                    $('#txtNoiDung').text(data[3]);
+                    $('#imgAnh').attr('src', '/Content/Images/' + data[4]);
+                    $('#txtGia').text(data[5]);
+                    $('#txtKichCo').text(data[6]);
+                    $('#txtMau').text(data[7]);
+                    $('#txtHangSanXuat').text(data[8]);                   
+                    $('#txtXuatXu').text(data[9]);
+                }
+            }
+        });
+    }
+    function XoaThongTinSanPham() {
+        $('#txtMaSanPham').text('');
+        $('#txtTenSanPham').text('');
+        $('#txtMoTa').text('');
+        $('#txtNoiDung').text('');
+        $('#imgAnh').attr('src','');
+        $('#txtGia').text('');
+    }
+    function TaiNhieuAnh(Id) {
+        $('#AnhSanPhamId').val(Id);
+        var frmData = new FormData();
+        frmData.append('Id', Id);
+        $.ajax({
+            url: "/Admin/SanPham/ThongTinChiTietSanPham",
+            type: "POST",
+            contentType: false,
+            processData: false,
+            data: frmData,
+            dataType: "json",
+            success: function (data) {
+                if (data != null) {
+                    $('#txtMaSP').text(data[0]);
+                    $('#txtTenSP').text(data[1]);                   
+                }
+            }
+        });
+    }
+    function XoaThongTinFormUploadAnh() {
+        $('#AnhSanPhamId').val("");
+        $('#ArrAnh').val("");
+        $('#txtMaSP').text("");
+        $('#txtTenSP').text("");     
+    }
+</script>
+@using (Html.BeginForm("DanhSachSanPham", "SanPham", FormMethod.Post))
+{
+    <div class="form-group col-md-12">
+        <lable class="control-label col-md-4">Từ khóa</lable>
+        <p class="control-label col-md-4">Thời gian tạo từ ngày</p>
+        <p class="control-label col-md-4">Đến ngày</p>
+    </div>
+
+    <div class="form-group col-md-12">
+        <div class="form-group col-md-4">
+            @Html.TextBox("txtTuKhoa", "", new { @class = "form-control" })
+        </div>
+        <div class="form-group col-md-4">
+            <input type="text" name="txtNgayBatDau" id="txtNgayBatDau" class="form-control" />
+        </div>
+        <div class="form-group col-md-4">
+            <input type="text" name="txtNgayKetThuc" id="txtNgayKetThuc" class="form-control" />
+        </div>
+    </div>
+
+    <div class="form-group col-md-12">
+        <p class="control-label col-md-4">Loại sản phẩm</p>
+        <p class="control-label col-md-4">Hãng sản xuất</p>
+        <p class="control-label col-md-4">Chủ đề</p>
+    </div>
+
+    <div class="form-group col-md-12">
+        <div class="form-group col-md-4">
+            @Html.DropDownList("loaiSanPham", (SelectList)ViewBag.LoaiSanPham, "---Chọn loại sản phẩm---", new { @class = "form-control" })
+        </div>
+        <div class="form-group col-md-4">
+            @Html.DropDownList("hangSanXuat", (SelectList)ViewBag.HangSanXuat, "---Chọn hãng sản xuất---", new { @class = "form-control" })
+        </div>
+        <div class="form-group col-md-4">
+            @Html.DropDownList("chuDe", (SelectList)ViewBag.ChuDe, "---Chọn chủ đề---", new { @class = "form-control" })
+        </div>
+    </div>
+
+    <div class="form-group col-md-12">
+        <p class="control-label col-md-4">Xuất xứ</p>
+        <p class="control-label col-md-4">Giá từ</p>
+        <p class="control-label col-md-4">Đến</p>
+    </div>
+
+    <div class="form-group col-md-12">
+        <div class="form-group col-md-4">
+            @Html.DropDownList("xuatXu", (SelectList)ViewBag.XuatXu, "---Chọn xuất xứ---", new { @class = "form-control" })
+        </div>
+        <div class="form-group col-md-4">
+            @Html.TextBox("txtGiaStart", "", new { @class = "form-control", @id = "txtGiaStart" })
+        </div>
+        <div class="form-group col-md-4">
+            @Html.TextBox("txtGiaEnd", "", new { @class = "form-control", @id = "txtGiaEnd" })
+        </div>
+    </div>
+
+    <div class="form-group col-md-12">
+        <button type="submit" style="border-radius:7px;width:117.59px;height:42px;transform:translateX(1136px)" class="btn btn-primary"><span class="glyphicon glyphicon-search" aria-hidden="true"></span>Tìm kiếm</button>
+    </div>
+}
+<br />
+<br />
+<div class="row">
+    <div class="col-xs-12">
+        <!-- PAGE CONTENT BEGINS -->
+
+        <div class="row">
+            <div class="col-xs-12">
+                <div class="clearfix">
+                    <div class="pull-right tableTools-container">
+                        <span class="btn btn-primary" id="btnThem" style="border-radius: 7px,display:@ViewBag.Them"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span> Thêm mới</span>
+                        <span class="btn btn-success" id="btnDuyetSanPham" style="width:117.59px;height:42px;border-radius:7px"><span class="glyphicon glyphicon-ok" aria-hidden="true"></span> Duyệt</span>
+                        <span class="btn btn-danger" id="btnBoDuyet" style="width:117.59px;height:42px;border-radius:7px"><span class="	glyphicon glyphicon-remove" aria-hidden="true"></span>Bỏ duyệt</span>
+                    </div>
+                </div>
+                <div class="table-header">
+                    Danh sách thông tin sản phẩm
+                </div>
+
+                <!-- div.table-responsive -->
+                <!-- div.dataTables_borderWrap -->
+                <div>
+                    <table id="dynamic-table" class="table table-striped table-bordered table-hover">
+                        <thead>
+                            <tr>
+                                <th class="center">
+                                    <label class="pos-rel">
+                                        <input type="checkbox" id="chkAll" />
+                                        <span class="lbl"></span>
+                                    </label>
+                                </th>
+                                <th>Ảnh sản phẩm</th>
+                                <th>Mã sản phẩm</th>
+                                <th>Tên sản phẩm</th>
+                                <th>Mô tả</th>
+                                <th>Giá</th>
+                                <th>Ngày tạo</th>
+                                <th>Đã duyệt</th>
+                                <th>Số lượng có</th>
+                                <th>Xuất xứ</th>
+                                <th>Chức năng</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+                            @foreach (var item in Model)
+                            {
+                            <tr>
+                                <td class="center">
+                                    <label class="pos-rel">
+                                        <input type="checkbox" class="ace" value="@item.Id" />
+                                        <span class="lbl"></span>
+                                    </label>
+                                </td>
+                                <td><img src="~/Content/Images/@item.AnhSanPham" width="170px" height="170px" class="img-thumbnail" /></td>
+                                <td>@item.MaSanPham</td>
+                                <td>@item.TenSanPham</td>
+                                <td>@item.MoTa</td>
+                                <td>
+                                    @if (item.Gia.HasValue)
+                                    {
+                                        @item.Gia.Value.ToString("###,###")
+                                    }
+                                    else
+                                    {
+                                        @Html.Raw("")
+                                    }
+                                </td>
+                                <td>
+                                    @if (item.NgayTao.HasValue)
+                                    {
+                                        @item.NgayTao.Value.ToString("dd/MM/yyyy")
+                                    }
+                                </td>
+                                <td>
+                                    @if (item.DaDuyet.HasValue)
+                                    {
+                                        if (item.DaDuyet == true)
+                                        {
+                                            <span class="glyphicon glyphicon-ok-sign" style="font-size:23px"></span>
+                                        }
+                                        else
+                                        {
+                                            <span class="glyphicon glyphicon-minus-sign" style="font-size:23px"></span>
+                                        }
+                                    }
+                                </td>
+                                <td>
+                                    @if (item.SoLuong.HasValue)
+                                    {
+                                        @item.SoLuong.Value
+                                    }
+                                </td>
+                                <td>
+                                    @if (item.XuatXuId != null && item.XuatXuId.Length > 0)
+                                    {
+                                        @item.QuocGia.TenQuocGia
+                                    }
+                                </td>
+                                <td style="width:120px;">
+                                    <div class="hidden-sm hidden-xs action-buttons">
+                                        <a class="blue" data-toggle="modal" data-target="#ChiTietSanPham" onclick="XemChiTietSanPham(@item.Id);">
+                                            <i class="ace-icon fa fa-search-plus bigger-130"></i>
+                                        </a>
+                                        <a class="green" href="/Admin/SanPham/UpdateSanPham/@item.Id" style="display:@ViewBag.Sua">
+                                            <i class="ace-icon fa fa-pencil bigger-130"></i>
+                                        </a>
+
+                                        <a class="red" href="#" onclick="XoaSanPham(@item.Id);" style="display:@ViewBag.Xoa">
+                                            <i class="ace-icon fa fa-trash-o bigger-130"></i>
+                                        </a>
+
+                                        <a href="#" data-toggle="modal" data-target="#UploadNhieuAnh" onclick="TaiNhieuAnh(@item.Id);">
+                                            <i class="ace-icon fa fa-cloud-upload bigger-130"></i>
+                                        </a>
+                                    </div>
+
+                                </td>
+                            </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <!-- PAGE CONTENT ENDS -->
+    </div><!-- /.col -->
+</div><!-- /.row -->
+//Thiết kế trang hiển thị chi tiết sản phẩm khi nhấn vào biểu tượng kính lúp
+<div class="modal fade" id="ChiTietSanPham" role="dialog">
+    <div class="modal-dialog">
+        <!-- Modal content-->
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" onclick="XoaThongTinSanPham();">&times;</button>
+                <h4 class="modal-title" style="text-align:center"><span id="tieude">Thông tin chi tiết sản phẩm</span></h4>
+            </div>
+            <div class="modal-body" style="padding: 10px 10px;">
+
+                <div class="row">
+                    <div class="col-md-3">
+                        <label>Mã sản phẩm:</label>
+                    </div>
+                    <div class="col-md-9">
+                        <p id="txtMaSanPham" style="font-size:16px"></p>
+                    </div>
+                </div>
+                <br />
+                <div class="row">
+                    <div class="col-md-3">
+                        <label>Tên sản phẩm:</label>
+                    </div>
+                    <div class="col-md-9">
+                        <p id="txtTenSanPham" style="font-size:16px"></p>
+                    </div>
+                </div>
+                <br />
+                <div class="row">
+                    <div class="col-md-3">
+                        <label>Mô tả:</label>
+                    </div>
+                    <div class="col-md-9">
+                        <p id="txtMoTa" style="font-size:16px"></p>
+                    </div>
+                </div>
+                <br />
+                <div class="row">
+                    <div class="col-md-3">
+                        <label>Nội dung:</label>
+                    </div>
+                    <div class="col-md-9">
+                        <p id="txtNoiDung" style="font-size:16px"></p>
+                    </div>
+                </div>
+                <br />
+                <div class="row">
+                    <div class="col-md-3">
+                        <label>Ảnh sản phẩm:</label>
+                    </div>
+                    <div class="col-md-9">
+                        <img id="imgAnh" width="150px" height="150px" />
+                    </div>
+                </div>
+                <br />
+                <div class="row">
+                    <div class="col-md-3">
+                        <label>Giá:</label>
+                    </div>
+                    <div class="col-md-9">
+                        <p id="txtGia" style="font-size:16px"></p>
+                    </div>
+                </div>
+                <br />
+                <div class="row">
+                    <div class="col-md-3">
+                        <label>Kích cỡ:</label>
+                    </div>
+                    <div class="col-md-9">
+                        <p id="txtKichCo" style="font-size:16px"></p>
+                    </div>
+                </div>
+                <br />
+                <div class="row">
+                    <div class="col-md-3">
+                        <label>Màu:</label>
+                    </div>
+                    <div class="col-md-9">
+                        <p id="txtMau" style="font-size:16px"></p>
+                    </div>
+                </div>
+                <br />
+                <div class="row">
+                    <div class="col-md-3">
+                        <label>Hãng sản xuất:</label>
+                    </div>
+                    <div class="col-md-9">
+                        <p id="txtHangSanXuat" style="font-size:16px"></p>
+                    </div>
+                </div>
+                <br />
+                <div class="row">
+                    <div class="col-md-3">
+                        <label>Xuất xứ:</label>
+                    </div>
+                    <div class="col-md-9">
+                        <p id="txtXuatXu" style="font-size:16px"></p>
+                    </div>
+                </div>
+            </div>           
+        </div>
+    </div>
+</div>
+//Thiết kế trang quản lý ảnh cho sản phẩm bất kỳ
+<div class="modal fade" id="UploadNhieuAnh" role="dialog">
+    <div class="modal-dialog">
+        <!-- Modal content-->
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" onclick="XoaThongTinFormUploadAnh();">&times;</button>
+                <h4 class="modal-title"><span id="tieude">Quản lý ảnh sản phẩm</span></h4>
+            </div>
+            <div class="modal-body" style="padding: 10px 10px;">
+                <div class="row">
+                    <div class="col-md-3">
+                        <label>Mã sản phẩm</label>
+                    </div>
+                    <div class="col-md-9">
+                        <label id="txtMaSP" style="font-size:16px"></label>
+                    </div>
+                </div>
+                <br />
+                <div class="row">
+                    <div class="col-md-3">
+                        <label>Tên sản phẩm</label>
+                    </div>
+                    <div class="col-md-9">
+                        <label id="txtTenSP" style="font-size:16px"></label>
+                    </div>
+                </div>
+                <br />
+                <div class="row">
+                    <div class="col-md-3">
+                        <label>Các ảnh sản phẩm</label>
+                    </div>
+                    <div class="col-md-9">
+                        <input type="file" name="fUploadAnh" id="fUploadAnh" multiple />
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer" style="margin: 0px; padding: 10px 10px;">
+                <input id="btnUploadNhieuAnh" type="button" class="btn btn-primary" value="Lưu lại" />
+                <button type="button" class="btn btn-primary" data-dismiss="modal" title="Đóng giao diện hiện thời" onclick="XoaThongTinFormUploadAnh();">Đóng</button>
+                <br />
+                <input type="hidden" id="AnhSanPhamId" name="AnhSanPhamId" />
+                <input type="hidden" id="ArrAnh" />
+            </div>
+
+        </div>
+    </div>
+</div>

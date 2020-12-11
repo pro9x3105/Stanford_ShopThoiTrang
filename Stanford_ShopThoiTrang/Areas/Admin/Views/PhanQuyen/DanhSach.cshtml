@@ -1,0 +1,299 @@
+﻿
+@{
+    ViewBag.Title = "Quản lý thông tin phân quyền";
+    Layout = "~/Areas/Admin/Views/Shared/_ShopAdmin.cshtml";
+}
+@section tieuDeTrang{
+    Shop thời trang
+    <small>
+        <i class="ace-icon fa fa-angle-double-right"></i>
+        Quản lý thông tin phân quyền
+    </small>
+}
+<script type="text/javascript">
+
+    function ThemThongTin() {
+        //Lấy thông tin
+        var vaiTroId = $("#txtVaiTro").val();
+        var chucNangChuaCapId = $("#txtChuaCap").val();
+        var xem = $("#cbXem").is(":checked");
+        var them = $("#cbThem").is(":checked");
+        var sua = $("#cbSua").is(":checked");
+        var xoa = $("#cbXoa").is(":checked");
+        var ThongBao = "";
+        if (vaiTroId == null || vaiTroId.length == 0) {
+            ThongBao += " - Bạn cần phải chọn thông tin tên vai trò <br>";
+        }
+        if (chucNangChuaCapId == null || chucNangChuaCapId.length == 0) {
+            ThongBao += " - Bạn cần phải chọn thông tin tên chức năng <br>";
+        }
+        if (ThongBao == "") {
+            var frmData = new FormData();
+            frmData.append('vaiTroId', vaiTroId);
+            frmData.append('chucNangChuaCapId', chucNangChuaCapId);
+            frmData.append('xem', xem);
+            frmData.append('them', them);
+            frmData.append('sua', sua);
+            frmData.append('xoa', xoa);
+
+            //Thực hiện xử lý thêm mới bằng ajax
+            $.ajax({
+                type: "POST",
+                contentType: false,
+                processData: false,
+                url: "/Admin/PhanQuyen/ThemJson",
+                data: frmData,
+                dataType: "json",
+                success: function (data) {
+                    if (data != 1) {
+                        //Reload lại danh sách
+                        $('#txtChuaCap').empty();
+                        $('#txtDaCap').empty();
+                        $("#txtVaiTro").val(vaiTroId).change();
+                    }
+                    else if (data == 1) {
+                        alert('Trùng lặp phân quyền');
+                    }
+                    else {
+                        alert('Có lỗi xảy ra trong quá trình thực hiện');
+                    }
+                }
+            });
+        }
+        $("#txtThongBao").html(ThongBao);
+    }
+    //Sửa thông tin
+    function SuaThongTin() {
+        var id = $('#txtDaCap').val();
+        var idVaiTro = $('#txtVaiTro').val();
+        $.ajax({
+            type: "POST",
+            contentType: "application/json; charset=utf-8",
+            url: "/Admin/PhanQuyen/ChiTietJson",
+            data: "{'id':'" + id + "','idVaiTro':'"+idVaiTro+"'}",
+            dataType: "json",
+            async: "false",
+            success: function (data) {
+                if (data != null) {
+                    $("#cbXem").prop('checked', data.Xem);
+                    $("#cbThem").prop('checked', data.Them);
+                    $("#cbSua").prop('checked', data.Sua);
+                    $("#cbXoa").prop('checked', data.Xoa);
+                }
+                else
+                    alert('Có lỗi xảy ra trong quá trình thực hiện');
+            },
+            error: function (result, textStatus, errorThrown) {
+                alert("Error:" + errorThrown + " - " + textStatus + " - " + result);
+                window.location.reload();
+            }
+        });
+    }
+
+    //Lưu thông tin
+    function LuuThongTin() {
+        var id = $('#txtDaCap').val();
+        var idVaiTro = $('#txtVaiTro').val();
+        //Lấy thông tin
+        var xem = $("#cbXem").is(":checked");
+        var them = $("#cbThem").is(":checked");
+        var sua = $("#cbSua").is(":checked");
+        var xoa = $("#cbXoa").is(":checked");
+        var ThongBao = "";
+        if (ThongBao == "") {
+            var frmData = new FormData();
+            frmData.append('xem', xem);
+            frmData.append('them', them);
+            frmData.append('sua', sua);
+            frmData.append('xoa', xoa);
+            frmData.append('idVaiTro', idVaiTro);
+            frmData.append('id', id);
+
+            //Thực hiện xử lý thêm mới bằng ajax
+            $.ajax({
+                type: "POST",
+                contentType: false,
+                processData: false,
+                url: "/Admin/PhanQuyen/LuuJson",
+                data: frmData,
+                dataType: "json",
+                success: function (data) {
+                    if (data != 1) {
+                        //Reload lại danh sách
+                        $("#tablePhanQuyen").load(location.href + " #tablePhanQuyen>*", "");
+                    }
+                    else if (data == 1) {
+                        alert('Trùng lặp phân quyền');
+                    }
+                    else {
+                        alert('Có lỗi xảy ra trong quá trình thực hiện');
+                    }
+                }
+            });
+        }
+        $("#txtThongBao").html(ThongBao);
+    }
+
+    //Xóa thông tin
+    function XoaThongTin() {
+        var id = $('#txtDaCap').val();
+        var idVaiTro = $('#txtVaiTro').val();
+        $.ajax({
+            type: "POST",
+            contentType: "application/json; charset=utf-8",
+            url: "/Admin/PhanQuyen/XoaJson",
+            data: "{'id':'" + id + "','idVaiTro':'"+idVaiTro+"'}",
+            dataType: "json",
+            async: "false",
+            success: function (data) {
+                //debugger;
+                if (data != null) {
+                    //Reload lại trang
+                    $("#tablePhanQuyen").load(location.href + " #tablePhanQuyen>*", "");
+                    $("#txtVaiTro").val(idVaiTro).change();
+                }
+                else
+                    alert('Có lỗi xảy ra trong quá trình thực hiện');
+            },
+            error: function (result, textStatus, errorThrown) {
+                alert("Error:" + errorThrown + " - " + textStatus + " - " + result);
+                window.location.reload();
+            }
+        });
+    }//End Xoa
+
+    function ChiTietVaiTroChuaCap() {
+        var vaiTroId = $('#txtVaiTro').val();
+        $.ajax({
+            type: "POST",
+            contentType: "application/json; charset=utf-8",
+            url: "/Admin/PhanQuyen/ChiTietVaiTroChuaCapJson",
+            data: "{'vaiTroId':'" + vaiTroId + "'}",
+            dataType: "json",
+            async: "false",
+            success: function (data) {
+                if (data != null) {
+                    $('#txtChuaCap').empty();
+                    $.each(data, function (i) {
+                        var optionhtml = '<option value="' + data[i].Id + '">' + data[i].TenChucNang + '</option>';
+                        $("#txtChuaCap").append(optionhtml);
+                    });
+                }
+                else
+                    alert('Có lỗi xảy ra trong quá trình thực hiện');
+            },
+            error: function (result, textStatus, errorThrown) {
+                alert("Error:" + errorThrown + " - " + textStatus + " - " + result);
+                window.location.reload();
+            }
+        });
+    }
+
+    function ChiTietVaiTroDaCap() {
+        var vaiTroId = $('#txtVaiTro').val();
+        $.ajax({
+            type: "POST",
+            contentType: "application/json; charset=utf-8",
+            url: "/Admin/PhanQuyen/ChiTietVaiTroDaCapJson",
+            data: "{'vaiTroId':'" + vaiTroId + "'}",
+            dataType: "json",
+            async: "false",
+            success: function (data) {
+                if (data != null) {
+                    $('#txtDaCap').empty();
+                    $.each(data, function (i) {
+                        var optionhtml = '<option value="' + data[i].ChucNangId + '">' + data[i].TenChucNang + '</option>';
+                        $("#txtDaCap").append(optionhtml);
+                    });
+                }
+                else
+                    alert('Có lỗi xảy ra trong quá trình thực hiện');
+            },
+            error: function (result, textStatus, errorThrown) {
+                alert("Error:" + errorThrown + " - " + textStatus + " - " + result);
+                window.location.reload();
+            }
+        });
+    }
+
+</script>
+
+<div id="tablePhanQuyen" class="row">
+    <div class="col-md-3">
+        <div class="text-center">Vai Trò</div>
+        <div>
+            @Html.ListBox("txtVaiTro", (IEnumerable<SelectListItem>)ViewBag.VaiTro, new { @class = "form-control", @size = "13", @onchange = "ChiTietVaiTroDaCap();ChiTietVaiTroChuaCap();" })
+        </div>
+    </div>
+
+    <div class="col-md-4" id="ChucNangChuaCap">
+        <div class="text-center">Chức năng chưa được cấp quyền</div>
+        <div>
+            @Html.ListBox("txtChuaCap", (IEnumerable<SelectListItem>)ViewBag.ChuaCap, new { @class = "form-control", @size = "13" })
+        </div>
+    </div>
+
+    <div class="col-md-1">
+        <div class="space-10"></div>
+        <div>
+            <div>
+                <button type="button" class="btn btn-primary form-control" data-dismiss="modal" id="btnThem" title="Thêm" onclick="ThemThongTin()">>  </button>
+            </div>
+            <div class="space-6"></div>
+            <div>
+                <button type="button" class="btn btn-primary form-control" data-dismiss="modal" id="btnThemTatCa" title="Thêm Tất Cả" onclick="">>>></button>
+            </div>
+            <div class="space-6"></div>
+            <div>
+                <button type="button" class="btn btn-danger form-control" data-dismiss="modal" id="btnXoa" title="Xoá" onclick=" XoaThongTin()"><  </button>
+            </div>
+            <div class="space-6"></div>
+            <div>
+                <button type="button" class="btn btn-danger form-control" data-dismiss="modal" id="btnXoaTatCa" title="Xoá Tất Cả" onclick=""><<<</button>
+            </div>
+        </div>
+        <div class="space-10"></div>
+        <div>
+            <div class="ace-settings-item">
+                <input type="checkbox" class="ace ace-checkbox-2 ace-save-state" id="cbXem"><label class="lbl" for="cbXem"> Xem</label>
+            </div>
+            <div class="space-4"></div>
+            <div class="ace-settings-item">
+                <input type="checkbox" class="ace ace-checkbox-2 ace-save-state" id="cbThem"><label class="lbl" for="cbThem"> Thêm</label>
+            </div>
+            <div class="space-4"></div>
+            <div class="ace-settings-item">
+                <input type="checkbox" class="ace ace-checkbox-2 ace-save-state" id="cbSua"><label class="lbl" for="cbSua"> Sửa</label>
+            </div>
+            <div class="space-4"></div>
+            <div class="ace-settings-item">
+                <input type="checkbox" class="ace ace-checkbox-2 ace-save-state" id="cbXoa"><label class="lbl" for="cbXoa"> Xoá</label>
+            </div>
+            <div class="space-6"></div>
+            <div>
+                <button type="button" class="btn btn-warning form-control" data-dismiss="modal" id="btnLuu" title="Lưu lại" onclick="LuuThongTin()">Lưu lại</button>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4" id="ChucNangDaCap">
+        <div class="text-center">Chức năng đã được cấp quyền</div>
+        <div>
+            @Html.ListBox("txtDaCap", (IEnumerable<SelectListItem>)ViewBag.DaCap, new { @class = "form-control", @size = "13", @onchange = "SuaThongTin()" })
+        </div>
+    </div>
+</div>
+<div class="row">
+    <div class="col-md-3">
+        <div id="txtThongBao" style="color:red">&nbsp;</div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="space-6"></div>
+        <div>
+            <span data-toggle="modal" style="display:@ViewBag.Them" data-target="#themmoiVaiTro" class="btn btn-primary"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span> Thêm mới</span>
+        </div>
+    </div>
+</div>
+
+
+

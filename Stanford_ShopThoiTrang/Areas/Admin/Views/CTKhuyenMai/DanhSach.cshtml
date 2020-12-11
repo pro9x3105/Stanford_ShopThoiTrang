@@ -1,0 +1,327 @@
+﻿@model IEnumerable<Stanford_ShopThoiTrang.Models.ChuongTrinhUuDai>
+@{
+    ViewBag.Title = "DanhSach";
+    Layout = "~/Areas/Admin/Views/Shared/_ShopAdmin.cshtml";
+}
+
+@**Khai báo tiêu đề cho trang danh sách*@
+@section tieuDeTrang{
+    Shop thời trang
+    <small>
+        <i class="ace-icon fa fa-angle-double-right"></i>
+        Quản lý Chương Trình Ưu Đãi
+    </small>
+}
+<script type="text/javascript">
+    $(document).ready(function () {
+        //Xử lý thêm mới
+        $("#btnThucHien").click(function () {
+            //Lấy thông tin
+            var tenCT = $("#txtTenChuongTrinh").val();
+            var moTa = $("#txtMoTa").val();
+            var BatDau = $("#dateBatDau").val();
+            var KetThuc = $("#dateKetThuc").val();
+
+            var chuongTrinhId = $("#SuaChuongTrinhId").val();
+
+            var frmData = new FormData();
+
+            frmData.append('tenCT', tenCT);
+            frmData.append('moTa', moTa);
+            frmData.append('BatDau', BatDau);
+            frmData.append('KetThuc', KetThuc);
+            if ($("#daduyet").is(":checked")) {
+                frmData.append('daduyet', "True");
+            }
+            else {
+                frmData.append('daduyet', "False");
+            }
+            if (chuongTrinhId == null || chuongTrinhId.length == 0) {
+                var chuongTrinhId1 = "0";
+                frmData.append('id', chuongTrinhId1);
+            } else {
+                frmData.append('id', chuongTrinhId);
+            }
+
+            //Thực hiện xử lý thêm mới bằng ajax
+            $.ajax({
+                type: "POST",
+                contentType: false,
+                processData: false,
+                url: "/Admin/CTKhuyenMai/ThemChuongTrinhJson",
+                data: frmData,
+                dataType: "json",
+                success: function (data) {
+                    if (data != null) {
+                        //Reload lại danh sách
+                        window.location.reload();
+                    }
+                }
+            });
+        });
+    });
+
+    //Xóa thông tin khi đóng form
+    function XoaThongTinForm() {
+        $("#tieude").text("Thêm mới Chương Trình");
+        $("#TenChuongTrinh").val("");
+        $("#txtMoTa").val("");
+        $("#dateBatDau").val("");
+        $("#dateKetThuc").val("");
+        $("#daduyet").val("");
+        $("#SuaChuongTrinhId").val("");
+    }
+
+    function getDate(time) {
+        var parsedDate = new Date(parseInt(time.substr(6)));
+        var date = new Date(parsedDate);
+        var month = date.getMonth() + 1;
+        var day = date.getDate();
+        if (month < 10) {
+            month = "0" + month;
+        }
+         if (day < 10) {
+            day = "0" + day;
+        }
+        var result = date.getFullYear() + "-" + month + "-" + day;
+        return result;
+    }
+    function SuaThongTin(id) {
+        // alert("Mã cần sửa: " + id);
+        var frmData = new FormData();
+        frmData.append('id', id);
+        //Thực hiện xử lý thêm mới bằng ajax
+        $.ajax({
+            type: "POST",
+            contentType: false,
+            processData: false,
+            url: "/Admin/CTKhuyenMai/ChiTietChuongTrinhJson",
+            data: frmData,
+            dataType: "json",
+            success: function (data) {
+                if (data != null) {
+                    $("#tieude").text("Sửa Chương Trình");
+                    $("#txtTenChuongTrinh").val(data.TenChuongTrinh);
+                    $("#txtMoTa").val(data.MoTa);
+                    $("#dateBatDau").val(getDate(data.TuNgay));
+                    $("#dateKetThuc").val(getDate(data.DenNgay));
+                    $("#daduyet").prop('checked', data.DaDuyet);
+                    $("#SuaChuongTrinhId").val(data.Id);
+                }
+            }
+        });
+    }
+
+
+    //Xóa thông tin chủ đề
+    function xoaChuongTrinh() {
+        var id = $('#XoaChuongTrinhId').val();
+        $.ajax({
+            type: "POST",
+            contentType: "application/json; charset=utf-8",
+            url: "/Admin/CTKhuyenMai/Xoa",
+            data: "{'id':'" + id + "'}",
+            dataType: "json",
+            async: "false",
+            success: function (data) {
+                //debugger;
+                if (data != null) {
+                    //Reload lại trang
+                    window.location.reload();
+                }
+                else
+                    alert('Có lỗi xảy ra trong quá trình thực hiện');
+            },
+            error: function (result, textStatus, errorThrown) {
+                alert("Error:" + errorThrown + " - " + textStatus + " - " + result);
+                window.location.reload();
+            }
+        });
+
+
+    }//End xoaChuDe
+
+    function ShowModal(id) {
+        $('#staticModal').modal('toggle');
+        $('#XoaChuongTrinhId').val(id);
+    }
+
+    function ClearModal() {
+        $('#XoaChuongTrinhId').val('');
+    }
+</script>
+<div class="row">
+    <div class="col-xs-12">
+        <!-- PAGE CONTENT BEGINS -->
+
+        <div class="row">
+            <div class="col-xs-12">
+                <div class="clearfix">
+                    <div class="pull-right tableTools-container">
+                        <span data-toggle="modal" data-target="#themmoichuongtrinh" class="btn btn-primary"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span> Thêm mới</span>
+                    </div>
+                </div>
+                <div class="table-header">
+                    Danh sách Chương trình
+                </div>
+
+                <!-- div.table-responsive -->
+                <!-- div.dataTables_borderWrap -->
+                <div>
+                    <table id="dynamic-table" class="table table-striped table-bordered table-hover">
+                        <thead>
+                            <tr>
+                                <th class="center">
+                                    <label class="pos-rel">
+                                        <input type="checkbox" class="ace" />
+                                        <span class="lbl"></span>
+                                    </label>
+                                </th>
+                                <th>Id</th>
+                                <th>Tên Chương Trình</th>
+                                <th>Mô tả</th>
+                                <th>Ngày Tạo</th>
+                                <th>Từ Ngày</th>
+                                <th>Đến Ngày</th>
+                                <th>Đã Duyệt</th>
+
+                            </tr>
+                        </thead>
+
+                        <tbody>
+                            @foreach (var item in Model)
+                            {
+                                <tr>
+                                    <td class="center">
+                                        <label class="pos-rel">
+                                            <input type="checkbox" class="ace" />
+                                            <span class="lbl"></span>
+                                        </label>
+                                    </td>
+                                    <td>@item.Id</td>
+                                    <td>@item.TenChuongTrinh</td>
+                                    <td>@item.MoTa</td>
+                                    <td>@item.NgayTao</td>
+                                    <td>@item.TuNgay</td>
+                                    <td>@item.DenNgay</td>
+                                    <td>@item.DaDuyet</td>
+
+                                    <td style="width:120px;">
+                                        <div class="hidden-sm hidden-xs action-buttons">
+                                            <a class="blue" href="#">
+                                                <i class="ace-icon fa fa-search-plus bigger-130"></i>
+                                            </a>
+                                            <a class="green" data-toggle="modal" data-target="#themmoichuongtrinh" onclick="SuaThongTin(@item.Id);">
+                                                <i class="ace-icon fa fa-pencil bigger-130"></i>
+                                            </a>
+
+                                            <a class="red" href="#" onclick="ShowModal(@item.Id)">
+                                                <i class="ace-icon fa fa-trash-o bigger-130"></i>
+                                            </a>
+                                        </div>
+
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <!-- PAGE CONTENT ENDS -->
+    </div><!-- /.col -->
+</div><!-- /.row -->
+<!--Thiết kế form thêm mới chủ đề-->
+<div class="modal fade" id="themmoichuongtrinh" role="dialog">
+    <div class="modal-dialog">
+        <!-- Modal content-->
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+                <h4 class="modal-title"><span id="tieude">Thêm mới chương trình</span></h4>
+            </div>
+            <div class="modal-body" style="padding: 10px 10px;">
+                <div class="row">
+                    <div class="col-md-3">
+                        <label>Tên chương tình <span style="color:red">(*)</span></label>
+                    </div>
+                    <div class="col-md-9">
+                        <input type="text" id="txtTenChuongTrinh" class="form-control" data-val="true" required data-val-required="Bạn cần nhập tên CHương Trình" />
+                    </div>
+                </div>
+                <br />
+                <div class="row">
+                    <div class="col-md-3">
+                        <label>Mô tả <span style="color:red">(*)</span></label>
+                    </div>
+                    <div class="col-md-9">
+                        <input type="text" id="txtMoTa" class="form-control" data-val="true" required />
+                    </div>
+                </div>
+                <br />
+                <div class="row">
+                    <div class="col-md-3">
+                        <label>Từ Ngày <span style="color:red">(*)</span></label>
+                    </div>
+                    <div class="col-md-9">
+                        <input type="date" id="dateBatDau" class="form-control" data-val="true" required data-val-required="Bạn cần nhập ngày bắt đầu " />
+                    </div>
+                </div>
+                <br />
+                <div class="row">
+                    <div class="col-md-3">
+                        <label>Đến Ngày <span style="color:red">(*)</span></label>
+                    </div>
+                    <div class="col-md-9">
+                        <input type="date" id="dateKetThuc" class="form-control" data-val="true" required data-val-required="Bạn cần nhập ngày kết thúc" />
+                    </div>
+                </div>
+                <br />
+                <div class="form-group">
+                    <div class="form-check row">
+                        <div class="col-md-3">
+                            <label class="form-check-label" for="daduyet">
+                                Đã Duyệt
+                            </label>
+                        </div>
+                        <div class="col-md-9">
+                            <input class="form-check-input" type="checkbox" id="daduyet">
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <br />
+            <div class="modal-footer" style="margin: 0px; padding: 10px 10px;">
+                <input id="btnThucHien" type="button" class="btn btn-primary" value="Lưu lại" />
+                <button type="button" class="btn btn-primary" data-dismiss="modal" title="Đóng giao diện hiện thời" onclick="XoaThongTinForm();">Đóng</button>
+                <br />
+                <input type="hidden" id="SuaChuongTrinhId" name="ChuongTrinhId" />
+            </div>
+
+        </div>
+    </div>
+</div>
+@*Hiển thị dialog xóa thông tin*@
+<div class="modal fade" id="staticModal" tabindex="-1" role="dialog" aria-labelledby="staticModalLabel" aria-hidden="true" data-backdrop="static">
+    <div class="modal-dialog modal-sm" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="staticModalLabel">Xóa Chương Trình</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p>
+                    Bạn có chắc chắn muốn xóa Chương Trình?
+                </p>
+                <input type="hidden" id="XoaChuongTrinhId" />
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" onclick="xoaChuongTrinh()">Xóa</button>
+                <button type="button" class="btn btn-secondary" data-dismiss="modal" onclick="ClearModal()">Đóng</button>
+
+            </div>
+        </div>
+    </div>
+</div>

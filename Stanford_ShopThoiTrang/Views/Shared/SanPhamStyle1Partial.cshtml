@@ -1,0 +1,19 @@
+﻿@using Stanford_ShopThoiTrang.Models
+@model IEnumerable<ChuDe>
+
+@foreach (var item in Model)
+{
+    <div class="col-md-4 grid-top">
+        <a href="~/Home/SanPham/@item.Id" class="b-link-stripe b-animate-go  thickbox">
+            <img class="img-responsive" src="~/Content/Images/@item.AnhChuDe" style="width:350px;height:356.14px" alt="">
+            <div class="b-wrapper">
+                <h3 class="b-animate b-from-left    b-delay03 " style="text-align:center;font-size:15px">
+                    <span>@item.TenChuDe</span>
+                </h3>
+            </div>
+        </a>
+        <p><a href="single.html">@item.TenChuDe</a></p>
+    </div>
+}
+<div class="clearfix"> </div>
+

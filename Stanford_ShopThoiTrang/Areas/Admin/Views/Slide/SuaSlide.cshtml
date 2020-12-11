@@ -1,0 +1,77 @@
+﻿@model Stanford_ShopThoiTrang.Models.Slide
+@{
+    ViewBag.Title = "SuaSlide";
+    Layout = "~/Areas/Admin/Views/Shared/_ShopAdmin.cshtml";
+}
+
+<h2>SuaSlide</h2>
+@section tieuDeTrang{
+    Shop thời trang
+    <small>
+        <i class="ace-icon fa fa-angle-double-right"></i>
+        Sửa Slide
+    </small>
+}
+
+@using (Html.BeginForm("UpdateSlide", "Slide", FormMethod.Post, new { encType = "multipart/form-data" }))
+{
+    
+    @Html.AntiForgeryToken()
+    @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+
+    <div class="form-group col-md-12">
+        <lable class="control-label col-md-2">Tên Slide<span style="color:red">(*)</span></lable>
+        <div class="form-group col-md-4">
+            @Html.TextBoxFor(p => p.TenSlide, "", new { @class = "form-control", @placeholder = "---Nhập tên Slide---" })
+
+        </div>
+    </div>
+
+    <div class="form-group col-md-12">
+        <lable class="control-label col-md-2">Mô tả<span style="color:red">(*)</span></lable>
+        <div class="form-group col-md-10">
+            @Html.TextBoxFor(p => p.MoTa, "", new { @class = "form-control", @placeholder = "---Mô tả Slide---" })
+
+        </div>
+    </div>
+    <div class="form-group col-md-12">
+        <lable class="control-label col-md-2">Ảnh<span style="color:red">(*)</span></lable>
+        <div class="form-group col-md-10">
+            <img id="imgAnh" width="170px" height="170px" class="img-thumbnail" src="~/Content/Images/@Model.Anh" />
+            <input type="file" name="fAnh" id="fAnh" />
+
+        </div>
+    </div>
+    @Html.HiddenFor(p=>p.Id)
+    <div class="form-group col-md-12">
+        <a href="/Admin/Slide/DanhSach" class="btn btn-primary" style="width:117.59px;height:42px;border-radius:7px;float:left"><span class="glyphicon glyphicon-arrow-left" aria-hidden="true"></span>Trở về</a>
+        <button type="submit" class="btn btn-primary" style="width: 117.59px; height: 42px; border-radius: 7px;float:right;"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span>Sửa</button>
+    </div>
+
+   
+}
+<script src="~/Scripts/bootstrap.min.js"></script>
+<script src="~/Scripts/jquery-3.3.1.min.js"></script>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.3/css/select2.min.css" rel="stylesheet" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.3/js/select2.min.js"></script>
+<script src="~/Scripts/autoNumeric-2.0-BETA.js"></script>
+<script src="~/Scripts/autoNumeric.js"></script>
+
+<script type="text/javascript">
+    $(document).ready(function () {
+
+        function ReadImg(input) {
+            //Nếu kích chọn ảnh
+            if (input.files && input.files[0]) {
+                var reader = new FileReader();
+                reader.onload = function (e) {
+                    $('#imgAnh').attr('src', e.target.result);
+                }
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+        $('#fAnh').change(function () {
+            ReadImg(this);
+        });
+    });
+</script>

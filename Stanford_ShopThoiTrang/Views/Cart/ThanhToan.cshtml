@@ -1,0 +1,182 @@
+﻿@using Stanford_ShopThoiTrang.Models;
+@model IEnumerable<Cart>
+@{
+    ViewBag.Title = "Thanh Toán";
+    Layout = "~/Views/Shared/_LayoutCart.cshtml";
+}
+<script type="text/javascript">
+    $(document).ready(function () {
+        //Xử lý thêm mới
+        $("#btnThucHien").click(function () {
+            //Lấy thông tin
+            var hoten = $("#txtHoTen").val();
+            var dienthoai = $("#txtDienThoai").val();
+            var email = $("#txtEmail").val();
+            var diachi = $("#txtDiaChi").val();
+            var mota = $("#txtMoTa").val();
+
+            var ThongBao = "";
+            if (hoten == null || hoten.length == 0) {
+                ThongBao += " - Bạn cần phải nhập thông tin họ và tên <br>";
+            }
+            if (dienthoai == null || dienthoai.length == 0) {
+                ThongBao += " - Bạn cần phải nhập thông tin điện thoại <br>";
+            }
+            if (email == null || email.length == 0) {
+                ThongBao += " - Bạn cần phải nhập thông tin email <br>";
+            }
+            if (diachi == null || diachi.length == 0) {
+                ThongBao += " - Bạn cần phải nhập thông tin địa chỉ <br>";
+            }
+            if (ThongBao == "") {
+                var frmData = new FormData();
+                frmData.append('hoten', hoten);
+                frmData.append('dienthoai', dienthoai);
+                frmData.append('email', email);
+                frmData.append('diachi', diachi);
+                frmData.append('mota', mota);
+                //Thực hiện xử lý thêm mới bằng ajax
+                $.ajax({
+                    type: "POST",
+                    contentType: false,
+                    processData: false,
+                    url: "/Cart/ThemJson",
+                    data: frmData,
+                    dataType: "json",
+                    success: function (data) {
+                        if (data != null) {
+                            //Reload lại danh sách
+                            alert("Đặt hàng thành công");
+                            window.location.href=data.Url;
+                        }
+                    },
+                    error: function (result, textStatus, errorThrown) {
+                alert("Error:" + errorThrown + " - " + textStatus + " - " + result);
+            }
+                });
+            }
+            $("#txtThongBao").html(ThongBao);
+        });
+    });
+</script>
+
+
+<div class="register">
+    <h1>Đơn đặt hàng của bạn</h1>
+    <form>
+        <div class="col-md-6 register-top-grid">
+            <h3>Thông tin chính</h3>
+            <div>
+                <span>Họ và tên</span>
+                <input type="text" id="txtHoTen" value="@ViewBag.HoTen">
+            </div>
+            <div>
+                <span>Điện thoại</span>
+                <input type="text" id="txtDienThoai" value="@ViewBag.DienThoai">
+            </div>
+
+            <br />
+            <!--Sau ghi loại khách hàng ở đây-->
+            @if (@ViewBag.LoaiKH != null)
+            {
+                <div>Loại khách hàng : @ViewBag.LoaiKH</div>
+            }
+
+
+            <div class="clearfix"></div>
+        </div>
+        <div class="col-md-6 ">
+            <div class="register-top-grid">
+                <h3>&nbsp;</h3>
+                <div>
+                    <span>Email</span>
+                    <input type="text" id="txtEmail" value="@ViewBag.Email">
+                </div>
+                <div>
+                    <span>Địa Chỉ</span>
+                    <input type="text" id="txtDiaChi" value="@ViewBag.DiaChi">
+                </div>
+            </div>
+            <div class="clearfix"></div>
+        </div>
+        <div class="col-md-12 register-top-grid">
+            <span>Mô tả</span>
+            <textarea id="txtMoTa" rows="5" style="width:100%"></textarea>
+        </div>
+        <div class="col-md-12 ">
+            <!--Giỏ Hàng-->
+
+            <div>&nbsp;</div>
+            <h3>Danh sách sản phẩm</h3>
+            <div>&nbsp;</div>
+            <table class="table table-bordered">
+                <thead>
+                    <tr>
+                        <th>
+                            STT
+                        </th>
+                        <th>
+                            Sản Phẩm
+                        </th>
+                        <th>
+                            Giá
+                        </th>
+                        <th>
+                            Số lượng
+                        </th>
+                        <th>
+                            Thành Tiền
+                        </th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @{ var i = 1;
+                        foreach (var item in Model)
+                        {
+
+                            var TongTien = @item.Gia * @item.SoLuong;
+                            <tr>
+                                <td>@Html.Raw(i)</td>
+                                <td>@item.TenSP</td>
+                                <td>@item.Gia.ToString("###,###") đồng</td>
+                                <td>@item.SoLuong</td>
+                                <td>@Html.Raw(TongTien.ToString("###,###"))</td>
+                            </tr>
+                            i++;
+                        }
+                    }
+                </tbody>
+            </table>
+        </div>
+        <div class="clearfix"></div>
+        <div class="col-md-6 ">
+            <div id="txtThongBao" style="color:red"></div>
+            <div class="clearfix"></div>
+        </div>
+        <div class="col-md-6 ">
+            <div>
+                <!--Tổng tiền và xác nhận-->
+
+                <div style="float:right">
+                    @{
+                        string b = "";
+                        double tongtien = Convert.ToDouble(Session["TongTien"].ToString());
+                        b = tongtien.ToString("###,###");
+                    }
+                    <p>Tổng tiền : <span style="float:right">@Html.Raw(b) Đồng</span></p>
+                    <p>Giảm giá : <span style="float:right">0 Đồng</span></p>    <!--Tích hợp giảm giá theo loại khách hàng nếu cần-->
+                    <p style="font-weight:bold">Thành tiền :  <span style="float:right">@Html.Raw(b) Đồng</span></p>
+
+                    <span>
+                        <a href="#" id="btnThucHien" class="continue">Thanh toán</a>
+                    </span>
+                </div>
+            </div>
+            <div class="clearfix"></div>
+        </div>
+        <div class="clearfix"> </div>
+    </form>
+
+
+</div>
+
